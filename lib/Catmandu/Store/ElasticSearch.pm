@@ -3,6 +3,7 @@ package Catmandu::Store::ElasticSearch;
 use Catmandu::Sane;
 use Moo;
 use ElasticSearch;
+use Catmandu::Store::ElasticSearch::Bag;
 
 with 'Catmandu::Store';
 

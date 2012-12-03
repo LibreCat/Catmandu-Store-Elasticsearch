@@ -4,8 +4,8 @@ use Catmandu::Sane;
 use Moo;
 use CQL::ElasticSearch;
 use Catmandu::Hits;
-use  Catmandu::Store::ElasticSearch::Searcher;
-use  Catmandu::Store::ElasticSearch::CQL;
+use Catmandu::Store::ElasticSearch::Searcher;
+use Catmandu::Store::ElasticSearch::CQL;
 
 with 'Catmandu::Bag';
 with 'Catmandu::Searchable';
