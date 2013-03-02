@@ -121,18 +121,18 @@ contains a translation of CQL fields into ElasticSearch searchable fields.
       }
  }
 
- The CQL mapping above will support for the 'title' field the CQL operators: any, all, =, <> and exact.
+The CQL mapping above will support for the 'title' field the CQL operators: any, all, =, <> and exact.
 
- For all the operators the 'title' field will be mapping into the ElasticSearch field 'mytitle', except
- for the 'exact' operator. In case of 'exact' we will search both the 'mytitle.exact' and 'myalttitle.exact'
- fields.
+For all the operators the 'title' field will be mapping into the ElasticSearch field 'mytitle', except
+for the 'exact' operator. In case of 'exact' we will search both the 'mytitle.exact' and 'myalttitle.exact'
+fields.
 
- The CQL mapping allows for sorting on the 'title' field. If, for instance, we would like to use a special
- ElasticSearch field for sorting we could have written "sort => { field => 'mytitle.sort' }".
+The CQL mapping allows for sorting on the 'title' field. If, for instance, we would like to use a special
+ElasticSearch field for sorting we could have written "sort => { field => 'mytitle.sort' }".
 
- The CQL has an optional callback field 'cb' which contains a reference to subroutines to rewrite or
- augment the search query. In this case, in the Biblio::Search package there is a normalize_title 
- subroutine which returns a string or an ARRAY of string with augmented title(s). E.g.
+The CQL has an optional callback field 'cb' which contains a reference to subroutines to rewrite or
+augment the search query. In this case, in the Biblio::Search package there is a normalize_title 
+subroutine which returns a string or an ARRAY of string with augmented title(s). E.g.
 
     package Biblio::Search;
 
