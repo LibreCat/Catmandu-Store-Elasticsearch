@@ -1,4 +1,7 @@
 Revision history for Catmandu-Store-ElasticSearch
 
+0.0201 2012-12-03
+       - fix reference to old CQL::ElasticSearch
+
 0.02    2012-12-03
        - initial release
