@@ -152,6 +152,10 @@ L<Catmandu::Store>
 
 Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>
 
+=head1 CONTRIBUTORS
+
+Dave Sherohman, C<< dave.sherohman at ub.lu.se >>
+
 =head1 LICENSE AND COPYRIGHT
 
 This program is free software; you can redistribute it and/or modify it
