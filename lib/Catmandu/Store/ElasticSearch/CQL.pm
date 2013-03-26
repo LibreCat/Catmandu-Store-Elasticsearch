@@ -1,9 +1,10 @@
 package Catmandu::Store::ElasticSearch::CQL;
 
 use Catmandu::Sane;
-use Moo;
 use Catmandu::Util qw(require_package trim);
+use Carp qw(confess);
 use CQL::Parser;
+use Moo;
 
 has parser  => (is => 'ro', lazy => 1, builder => '_build_parser');
 has mapping => (is => 'ro');
