@@ -104,6 +104,7 @@ sub search {
     my $start = delete $args{start};
     my $limit = delete $args{limit};
     my $bag   = delete $args{reify};
+    my $keep_raw_response = delete $args{keep_raw_response};
 
     if ($bag) {
         $args{fields} = [];
@@ -121,7 +122,7 @@ sub search {
     my $hits = {
         start => $start,
         limit => $limit,
-        total => $res->{hits}{total},
+        total => $res->{hits}{total}
     };
 
     if ($bag) {
@@ -146,6 +147,11 @@ sub search {
         }
     }
 
+    #save original response
+    if($keep_raw_response){
+      $hits->{raw_response} = $res;
+    }
+    
     $hits;
 }
 
