@@ -119,9 +119,7 @@ sub _parse_term_node {
         }
         if ($filters) {
             for my $filter (@$filters) {
-                given ($filter) {
-                    when ('lowercase') { $term = lc $term }
-                }
+                if ($filter eq 'lowercase') { $term = lc $term; }
             }
         }
         if (ref $op && $op->{cb}) {

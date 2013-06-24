@@ -1,5 +1,8 @@
 Revision history for Catmandu-Store-ElasticSearch
 
+0.0203 2013-06-24
+       - remove given statements
+
 0.0202 2013-03-26
        - import confess
        - fix pod formatting
