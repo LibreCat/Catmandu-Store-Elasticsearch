@@ -2,22 +2,28 @@ package Catmandu::Store::ElasticSearch;
 
 use Catmandu::Sane;
 use Moo;
-use ElasticSearch;
+use Elasticsearch::Compat;
 use Catmandu::Store::ElasticSearch::Bag;
 
 with 'Catmandu::Store';
 
 =head1 NAME
 
-Catmandu::Store::ElasticSearch - A searchable store backed by ElasticSearch
+Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
+
+=head1 DEPRECIATION NOTICE
+
+This is the last version of L<Catmandu::Store::ElasticSearch>. Development will
+continue as L<Catmandu::Store::Elasticsearch> using the official
+L<Elasticsearch> client.
 
 =head1 VERSION
 
-Version 0.0203
+Version 0.0204
 
 =cut
 
-our $VERSION = '0.0203';
+our $VERSION = '0.0204';
 
 =head1 SYNOPSIS
 
@@ -38,7 +44,7 @@ our $VERSION = '0.0203';
     my $obj3 = $store->bag->get('test123');
 
     $store->bag->delete('test123');
-    
+
     $store->bag->delete_all;
 
     # All bags are iterators
@@ -48,7 +54,7 @@ our $VERSION = '0.0203';
     # Some stores can be searched
     my $hits = $store->bag->search(query => 'name:Patrick');
 
-    # ElasticSearch supports CQL...
+    # Catmandu::Store::ElasticSearch supports CQL...
     my $hits = $store->bag->search(cql_query => 'name any "Patrick"');
 
 =cut
@@ -74,7 +80,7 @@ has elastic_search => (
 
 sub _build_elastic_search {
     my $self = $_[0];
-    my $es = ElasticSearch->new(delete $self->{_args});
+    my $es = Elasticsearch::Compat->new(delete $self->{_args});
     unless ($es->index_exists(index => $self->index_name)) {
         $es->create_index(
             index => $self->index_name,
@@ -93,17 +99,14 @@ sub BUILD {
         $self->{_args}{$key} = $args->{$key} if exists $args->{$key};
     }
 }
-=head1 SUPPORT
-
-This ElasticSearch interface is based on elasticsearch-0.17.6.
 
 =head1 METHODS
 
 =head2 new(index_name => $name, cql_mapping => \%mapping)
 
 Create a new Catmandu::Store::ElasticSearch store connected to index $name. The
-ElasticSearch supports CQL searches when a cql_mapping is provided. This hash
-contains a translation of CQL fields into ElasticSearch searchable fields.
+store supports CQL searches when a cql_mapping is provided. This hash
+contains a translation of CQL fields into Elasticsearch searchable fields.
 
  # Example mapping
  $cql_mapping = {
@@ -123,12 +126,12 @@ contains a translation of CQL fields into ElasticSearch searchable fields.
 
 The CQL mapping above will support for the 'title' field the CQL operators: any, all, =, <> and exact.
 
-For all the operators the 'title' field will be mapping into the ElasticSearch field 'mytitle', except
+For all the operators the 'title' field will be mapping into the Elasticsearch field 'mytitle', except
 for the 'exact' operator. In case of 'exact' we will search both the 'mytitle.exact' and 'myalttitle.exact'
 fields.
 
 The CQL mapping allows for sorting on the 'title' field. If, for instance, we would like to use a special
-ElasticSearch field for sorting we could have written "sort => { field => 'mytitle.sort' }".
+Elasticsearch field for sorting we could have written "sort => { field => 'mytitle.sort' }".
 
 The CQL has an optional callback field 'cb' which contains a reference to subroutines to rewrite or
 augment the search query. In this case, in the Biblio::Search package there is a normalize_title 

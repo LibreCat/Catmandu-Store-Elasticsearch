@@ -309,7 +309,7 @@ sub _text_node {
 
 =head1 NAME
 
-Catmandu::Store::ElasticSearch::CQL - Converts a CQL query string to a ElasticSearch query hashref
+Catmandu::Store::ElasticSearch::CQL - Converts a CQL query string to a Elasticsearch query hashref
 
 =head1 SYNOPSIS
 
@@ -350,11 +350,11 @@ This package currently parses most of CQL 1.1:
 
 =head2 parse
 
-Parses the given CQL query string with L<CQL::Parser> and converts it to a ElasticSearch query hashref.
+Parses the given CQL query string with L<CQL::Parser> and converts it to a Elasticsearch query hashref.
 
 =head2 parse_node
 
-Converts the given L<CQL::Node> to a ElasticSearch query hashref.
+Converts the given L<CQL::Node> to a Elasticsearch query hashref.
 
 =head1 TODO
 
