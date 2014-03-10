@@ -1,5 +1,13 @@
 Revision history for Catmandu-Store-ElasticSearch
 
+
+0.0205 2014-03-10
+       - switch to Search::Elasticsearch::Compat
+       - store drop method
+
+0.0204 2014-01-02
+       - switch to Elasticsearch::Compat
+
 0.0203 2013-06-24
        - remove given statements
 

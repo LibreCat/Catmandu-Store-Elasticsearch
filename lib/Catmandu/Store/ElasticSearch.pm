@@ -19,11 +19,11 @@ L<Search::Elasticsearch> client.
 
 =head1 VERSION
 
-Version 0.0204
+Version 0.0205
 
 =cut
 
-our $VERSION = '0.0204';
+our $VERSION = '0.0205';
 
 =head1 SYNOPSIS
 
