@@ -2,7 +2,7 @@ package Catmandu::Store::ElasticSearch;
 
 use Catmandu::Sane;
 use Moo;
-use Elasticsearch::Compat;
+use Search::Elasticsearch::Compat;
 use Catmandu::Store::ElasticSearch::Bag;
 
 with 'Catmandu::Store';
@@ -15,7 +15,7 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
 
 This is the last version of L<Catmandu::Store::ElasticSearch>. Development will
 continue as L<Catmandu::Store::Elasticsearch> using the official
-L<Elasticsearch> client.
+L<Search::Elasticsearch> client.
 
 =head1 VERSION
 
@@ -80,7 +80,8 @@ has elastic_search => (
 
 sub _build_elastic_search {
     my $self = $_[0];
-    my $es = Elasticsearch::Compat->new(delete $self->{_args});
+    my $args = delete $self->{_args};
+    my $es = Search::Elasticsearch::Compat->new($args);
     unless ($es->index_exists(index => $self->index_name)) {
         $es->create_index(
             index => $self->index_name,
