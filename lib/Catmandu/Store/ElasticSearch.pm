@@ -100,6 +100,11 @@ sub BUILD {
     }
 }
 
+sub delete_index {
+    my ($self) = @_;
+    $self->elastic_search->delete_index();
+}
+
 =head1 METHODS
 
 =head2 new(index_name => $name, cql_mapping => \%mapping)
@@ -146,6 +151,11 @@ subroutine which returns a string or an ARRAY of string with augmented title(s).
     }
 
     1;
+
+=head2 delete_index
+
+Deletes the elasticsearch index backing this store. Calling functions after
+this may fail until this class is reinstantiated, creating a new index.
 
 =head1 SEE ALSO
 
