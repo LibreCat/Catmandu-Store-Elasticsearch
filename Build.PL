@@ -17,7 +17,7 @@ my $builder = Module::Build->new(
         'perl' => '5.10.1',
         'Catmandu' => '0.8',
         'CQL::Parser' => '1.12',
-        'Elasticsearch::Compat' => '0.03',
+        'Elasticsearch::Compat' => '0.04',
         'Moo' => '1.00',
     },
     add_to_cleanup => [qw(

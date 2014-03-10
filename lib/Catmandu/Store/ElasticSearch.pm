@@ -100,9 +100,9 @@ sub BUILD {
     }
 }
 
-sub delete_index {
+sub drop {
     my ($self) = @_;
-    $self->elastic_search->delete_index();
+    $self->elastic_search->delete_index;
 }
 
 =head1 METHODS
@@ -121,7 +121,7 @@ contains a translation of CQL fields into Elasticsearch searchable fields.
           'all'   => 1 ,
           '='     => 1 ,
           '<>'    => 1 ,
-	  'exact' => {field => [qw(mytitle.exact myalttitle.exact)]}
+          'exact' => {field => [qw(mytitle.exact myalttitle.exact)]}
         } ,
         sort  => 1,
         field => 'mytitle',
@@ -152,7 +152,7 @@ subroutine which returns a string or an ARRAY of string with augmented title(s).
 
     1;
 
-=head2 delete_index
+=head2 drop
 
 Deletes the elasticsearch index backing this store. Calling functions after
 this may fail until this class is reinstantiated, creating a new index.
@@ -168,6 +168,7 @@ Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>
 =head1 CONTRIBUTORS
 
 Dave Sherohman, C<< dave.sherohman at ub.lu.se >>
+Robin Sheat, C<< robin at kallisti.net.nz >>
 
 =head1 LICENSE AND COPYRIGHT
 
