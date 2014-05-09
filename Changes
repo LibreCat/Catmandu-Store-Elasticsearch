@@ -1,22 +1,6 @@
-Revision history for Catmandu-Store-ElasticSearch
+Revision history for Catmandu-Store-Elasticsearch
 
 
-0.0205 2014-03-10
-       - switch to Search::Elasticsearch::Compat
-       - store drop method
-
-0.0204 2014-01-02
-       - switch to Elasticsearch::Compat
-
-0.0203 2013-06-24
-       - remove given statements
-
-0.0202 2013-03-26
-       - import confess
-       - fix pod formatting
-
-0.0201 2012-12-03
-       - fix reference to old CQL::ElasticSearch
-
-0.02    2012-12-03
-       - initial release
+0.01    2014-04-29
+       - Continue development from Catmandu::Store::ElasticSearch with the
+         official Search::Elasticsearch client

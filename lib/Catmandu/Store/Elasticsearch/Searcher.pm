@@ -1,4 +1,4 @@
-package Catmandu::Store::ElasticSearch::Searcher;
+package Catmandu::Store::Elasticsearch::Searcher;
 
 use Catmandu::Sane;
 use Moo;
@@ -14,37 +14,30 @@ has sort  => (is => 'ro');
 
 sub generator {
     my ($self) = @_;
-    my $limit = $self->limit;
     sub {
         state $total = $self->total;
         if (defined $total) {
             return unless $total;
         }
-        state $scroller = do {
-            my $args = {
-                query => $self->query,
-                type  => $self->bag->name,
-                from  => $self->start,
-            };
-            if ($self->sort) {
-                $args->{search_type} = 'query_then_fetch';
-                $args->{sort} = $self->sort;
-            } else {
-                $args->{search_type} = 'scan';
-            }
-            $self->bag->store->elastic_search->scrolled_search($args);
+
+        state $scroll = do {
+            my $body = {query => $self->query};
+            $body->{sort} = $self->sort if $self->sort;
+            $self->store->es->scroll_helper(
+                index       => $self->store->index_name,
+                type        => $self->name,
+                search_type => $self->sort ? 'query_then_fetch' : 'scan',
+                from        => $self->start,
+                size        => $self->bag->buffer_size, # TODO divide by number of shards
+                body        => $body,
+            );
         };
-        state @hits;
-        unless (@hits) {
-            if ($total && $limit > $total) {
-                $limit = $total;
-            }
-            @hits = $scroller->next($limit);
-        }
+
+        my $data = $scroll->next // return;
         if ($total) {
             $total--;
         }
-        (shift(@hits) || return)->{_source};
+        $data->{_source};
     };
 }
 
@@ -63,9 +56,13 @@ sub slice { # TODO constrain total?
 
 sub count {
     my ($self) = @_;
-    $self->bag->store->elastic_search->count(
-        query => $self->query,
+    my $store = $self->bag->store;
+    $store->es->count(
+        index => $store->index_name,
         type  => $self->bag->name,
+        body  => {
+            query => $self->query,
+        },
     )->{count};
 }
 

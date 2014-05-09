@@ -1,35 +1,29 @@
-package Catmandu::Store::ElasticSearch;
+package Catmandu::Store::Elasticsearch;
 
 use Catmandu::Sane;
 use Moo;
-use Search::Elasticsearch::Compat;
-use Catmandu::Store::ElasticSearch::Bag;
+use Search::Elasticsearch;
+use Catmandu::Store::Elasticsearch::Bag;
 
 with 'Catmandu::Store';
 
 =head1 NAME
 
-Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
-
-=head1 DEPRECIATION NOTICE
-
-This is the last version of L<Catmandu::Store::ElasticSearch>. Development will
-continue as L<Catmandu::Store::Elasticsearch> using the official
-L<Search::Elasticsearch> client.
+Catmandu::Store::Elasticsearch - A searchable store backed by Elasticsearch
 
 =head1 VERSION
 
-Version 0.0205
+Version 0.01
 
 =cut
 
-our $VERSION = '0.0205';
+our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use Catmandu::Store::ElasticSearch;
+    use Catmandu::Store::Elasticsearch;
 
-    my $store = Catmandu::Store::ElasticSearch->new(index_name => 'catmandu');
+    my $store = Catmandu::Store::Elasticsearch->new(index_name => 'catmandu');
 
     my $obj1 = $store->bag->add({ name => 'Patrick' });
 
@@ -54,63 +48,47 @@ our $VERSION = '0.0205';
     # Some stores can be searched
     my $hits = $store->bag->search(query => 'name:Patrick');
 
-    # Catmandu::Store::ElasticSearch supports CQL...
+    # Catmandu::Store::Elasticsearch supports CQL...
     my $hits = $store->bag->search(cql_query => 'name any "Patrick"');
 
 =cut
 
-my $ELASTIC_SEARCH_ARGS = [qw(
-    transport
-    servers
-    trace_calls
-    timeout
-    max_requests
-    no_refresh
-)];
-
 has index_name     => (is => 'ro', required => 1);
 has index_settings => (is => 'ro', lazy => 1, default => sub { +{} });
 has index_mappings => (is => 'ro', lazy => 1, default => sub { +{} });
+has _es_args       => (is => 'rw', lazy => 1, default => sub { +{} });
+has es             => (is => 'lazy');
 
-has elastic_search => (
-    is      => 'ro',
-    lazy    => 1,
-    builder => '_build_elastic_search',
-);
-
-sub _build_elastic_search {
-    my $self = $_[0];
-    my $args = delete $self->{_args};
-    my $es = Search::Elasticsearch::Compat->new($args);
-    unless ($es->index_exists(index => $self->index_name)) {
-        $es->create_index(
+sub _build_es {
+    my ($self) = @_;
+    my $es = Search::Elasticsearch->new($self->_es_args);
+    unless ($es->indices->exists(index => $self->index_name)) {
+        $es->indices->create(
             index => $self->index_name,
-            settings => $self->index_settings,
-            mappings => $self->index_mappings,
+            body  => {
+                settings => $self->index_settings,
+                mappings => $self->index_mappings,
+            },
         );
     }
-    $es->use_index($self->index_name);
     $es;
 }
 
 sub BUILD {
     my ($self, $args) = @_;
-    $self->{_args} = {};
-    for my $key (@$ELASTIC_SEARCH_ARGS) {
-        $self->{_args}{$key} = $args->{$key} if exists $args->{$key};
-    }
+    $self->_es_args($args);
 }
 
 sub drop {
     my ($self) = @_;
-    $self->elastic_search->delete_index;
+    $self->es->indices->delete(index => $self->index_name);
 }
 
 =head1 METHODS
 
 =head2 new(index_name => $name, cql_mapping => \%mapping)
 
-Create a new Catmandu::Store::ElasticSearch store connected to index $name. The
+Create a new Catmandu::Store::Elasticsearch store connected to index $name. The
 store supports CQL searches when a cql_mapping is provided. This hash
 contains a translation of CQL fields into Elasticsearch searchable fields.
 

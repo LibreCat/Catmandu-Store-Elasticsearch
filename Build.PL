@@ -3,7 +3,7 @@ use warnings;
 use Module::Build;
 
 my $builder = Module::Build->new(
-    module_name => 'Catmandu::Store::ElasticSearch',
+    module_name => 'Catmandu::Store::Elasticsearch',
     license => 'perl',
     dist_author => [
         'Nicolas Steenlant <nicolas.steenlant@ugent.be>',
@@ -18,10 +18,10 @@ my $builder = Module::Build->new(
         'Catmandu' => '0.8',
         'CQL::Parser' => '1.12',
         'Moo' => '1.00',
-        'Search::Elasticsearch::Compat' => '0.10',
+        'Search::Elasticsearch' => '1.11',
     },
     add_to_cleanup => [qw(
-        Catmandu-Store-ElasticSearch-*
+        Catmandu-Store-Elasticsearch-*
     )],
     create_makefile_pl => 'traditional',
     create_license => 1,

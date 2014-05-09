@@ -1,101 +1,114 @@
-package Catmandu::Store::ElasticSearch::Bag;
+package Catmandu::Store::Elasticsearch::Bag;
 
 use Catmandu::Sane;
 use Moo;
 use Catmandu::Hits;
-use Catmandu::Store::ElasticSearch::Searcher;
-use Catmandu::Store::ElasticSearch::CQL;
+use Catmandu::Store::Elasticsearch::Searcher;
+use Catmandu::Store::Elasticsearch::CQL;
 
 with 'Catmandu::Bag';
 with 'Catmandu::Searchable';
-with 'Catmandu::Buffer';
 
-has cql_mapping => (is => 'ro'); # TODO move to Searchable
+has buffer_size => (is => 'ro', lazy => 1, builder => 'default_buffer_size');
+has _bulk       => (is => 'ro', lazy => 1, builder => '_build_bulk');
+has cql_mapping => (is => 'ro');
+
+sub default_buffer_size { 100 }
+
+sub _build_bulk {
+    my ($self) = @_;
+    my %args = (
+        index     => $self->store->index_name,
+        type      => $self->name,
+        max_count => $self->buffer_size,
+        on_error  => sub {
+            my ($action, $res, $i) = @_;
+            $self->log->error($res);
+        },
+    );
+    if ($self->log->is_debug) {
+        $args{on_success} = sub {
+            my ($action, $res, $i) = @_;
+            $self->log->debug($res);
+        };
+    }
+    $self->store->es->bulk_helper(%args);
+}
 
 sub generator {
     my ($self) = @_;
-    my $limit = $self->buffer_size;
     sub {
-        state $scroller = $self->store->elastic_search->scrolled_search({
+        state $scroll = $self->store->es->scroll_helper(
+            index       => $self->store->index_name,
+            type        => $self->name,
             search_type => 'scan',
-            query => {match_all => {}},
-            type  => $self->name,
-        });
-        state @hits;
-        @hits = $scroller->next($limit) unless @hits;
-        (shift(@hits) || return)->{_source};
+            size        => $self->buffer_size, # TODO divide by number of shards
+            body        => {
+                query => {match_all => {}},
+            },
+        );
+        my $data = $scroll->next // return;
+        $data->{_source};
     };
 }
 
 sub count {
     my ($self) = @_;
-    $self->store->elastic_search->count(type => $self->name)->{count};
+    $self->store->es->count(
+        index => $self->store->index_name,
+        type  => $self->name,
+    )->{count};
 }
 
-sub get {
+sub get { # TODO ignore missing
     my ($self, $id) = @_;
-    my $res = $self->store->elastic_search->get(
-        type => $self->name,
-        ignore_missing => 1,
-        id => $id,
+    $self->store->es->get_source(
+        index => $self->store->index_name,
+        type  => $self->name,
+        id    => $id,
     );
-    return $res->{_source} if $res;
-    return;
 }
 
 sub add {
     my ($self, $data) = @_;
-
-    $self->buffer_add({index => {
-        type => $self->name,
-        id => $data->{_id},
-        data => $data,
-    }});
-
-    if ($self->buffer_is_full) {
-        $self->commit;
-    }
+    $self->_bulk->index({
+        id     => $data->{_id},
+        source => $data,
+    });
 }
 
 sub delete {
     my ($self, $id) = @_;
-
-    $self->buffer_add({delete => {
-        type => $self->name,
-        id => $id,
-    }});
-
-    if ($self->buffer_is_full) {
-        $self->commit;
-    }
+    $self->_bulk->delete({id => $id});
 }
 
-sub delete_all {
+sub delete_all { # TODO refresh
     my ($self) = @_;
-    my $es = $self->store->elastic_search;
+    my $es = $self->store->es;
     $es->delete_by_query(
-        query => {match_all => {}},
+        index => $self->store->index_name,
         type  => $self->name,
+        body  => {
+            query => {match_all => {}},
+        },
     );
-    $es->refresh_index;
 }
 
-sub delete_by_query {
+sub delete_by_query { # TODO refresh
     my ($self, %args) = @_;
-    my $es = $self->store->elastic_search;
+    my $es = $self->store->es;
     $es->delete_by_query(
-        query => $args{query},
+        index => $self->store->index_name,
         type  => $self->name,
+        body  => {
+            query => $args{query},
+        },
     );
-    $es->refresh_index;
 }
 
-sub commit { # TODO optimize, better error handling
+sub commit {
     my ($self) = @_;
-    return 1 unless $self->buffer_used;
-    my $err = $self->store->elastic_search->bulk(actions => $self->buffer, refresh => 1)->{errors};
-    $self->clear_buffer;
-    return !defined $err, $err;
+    $self->_bulk->flush;
 }
 
 sub search {
@@ -109,12 +122,15 @@ sub search {
         $args{fields} = [];
     }
 
-    my $res = $self->store->elastic_search->search({
-        %args,
+    my $res = $self->store->es->search(
+        index => $self->store->index_name,
         type  => $self->name,
-        from  => $start,
-        size  => $limit,
-    });
+        body  => {
+            %args,
+            from => $start,
+            size => $limit,
+        },
+    );
 
     my $docs = $res->{hits}{hits};
 
@@ -134,8 +150,8 @@ sub search {
 
     $hits = Catmandu::Hits->new($hits);
 
-    if ($args{facets}) {
-        $hits->{facets} = $res->{facets};
+    for my $key (qw(facets suggest)) {
+        $hits->{$key} = $res->{$key} if exists $args{$key};
     }
 
     if ($args{highlight}) {
@@ -151,7 +167,7 @@ sub search {
 
 sub searcher {
     my ($self, %args) = @_;
-    Catmandu::Store::ElasticSearch::Searcher->new(%args, bag => $self);
+    Catmandu::Store::Elasticsearch::Searcher->new(%args, bag => $self);
 }
 
 sub translate_sru_sortkeys {
@@ -183,7 +199,7 @@ sub _translate_sru_sortkey {
 
 sub translate_cql_query {
     my ($self, $query) = @_;
-    Catmandu::Store::ElasticSearch::CQL->new(mapping => $self->cql_mapping)->parse($query);
+    Catmandu::Store::Elasticsearch::CQL->new(mapping => $self->cql_mapping)->parse($query);
 }
 
 sub normalize_query {

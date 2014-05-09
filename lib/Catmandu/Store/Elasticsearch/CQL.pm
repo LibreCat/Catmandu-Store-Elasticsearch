@@ -1,4 +1,4 @@
-package Catmandu::Store::ElasticSearch::CQL;
+package Catmandu::Store::Elasticsearch::CQL;
 
 use Catmandu::Sane;
 use Catmandu::Util qw(require_package trim);
@@ -161,7 +161,7 @@ sub _parse_prox_node {
 
     my $slop = 0;
     my $qualifier = $node->left->getQualifier;
-    my $term = join ' ', $node->left->getTerm, $node->right->getTerm;
+    my $term = join(' ', $node->left->getTerm, $node->right->getTerm);
     if (my ($n) = $node->op =~ $RE_DISTANCE_MODIFIER) {
         $slop = $n - 1 if $n > 1;
     }
@@ -169,7 +169,7 @@ sub _parse_prox_node {
         $qualifier = '_all';
     }
 
-    $query->{text_phrase} = { $qualifier => { query => $term, slop => $slop } };
+    $query->{match_phrase} = { $qualifier => { query => $term, slop => $slop } };
 }
 
 sub _term_node {
@@ -220,14 +220,14 @@ sub _term_node {
                 if ($_ eq '_id') {
                     { ids => { values => [$term] } };
                 } else {
-                    { text_phrase => { $_ => { query => $term } } };
+                    { match_phrase => { $_ => { query => $term } } };
                 }
             } @$qualifier ] } };
         } else {
             if ($qualifier eq '_id') {
                 return { bool => { must_not => [ { ids => { values => [$term] } } ] } };
             }
-            return { bool => { must_not => [ { text_phrase => { $qualifier => { query => $term } } } ] } };
+            return { bool => { must_not => [ { match_phrase => { $qualifier => { query => $term } } } ] } };
         }
     } elsif ($base eq 'exact') {
         if (ref $qualifier) {
@@ -235,14 +235,14 @@ sub _term_node {
                 if ($_ eq '_id') {
                     { ids => { values => [$term] } };
                 } else {
-                    { text_phrase => { $_ => { query => $term } } };
+                    { match_phrase => { $_ => { query => $term } } };
                 }
             } @$qualifier ] } };
         } else {
             if ($qualifier eq '_id') {
                 return { ids => { values => [$term] } };
             }
-            return { text_phrase => { $qualifier => { query => $term } } };
+            return {match_phrase => { $qualifier => { query => $term } } };
         }
     } elsif ($base eq 'any') {
         $term = [split /\s+/, trim($term)];
@@ -270,7 +270,7 @@ sub _term_node {
             if (ref $qualifier) {
                 return { bool => { should => [ map { { text => { $_ => { query => $term } } } } @$qualifier ] } };
             } else {
-                return { text => { $qualifier => { query => $term } } };
+                return { match => { $qualifier => { query => $term } } };
             }
         }
         if (ref $qualifier) {
@@ -296,24 +296,24 @@ sub _text_node {
     }
     for my $m (@modifiers) {
         if ($m->[1] eq 'fuzzy') { # TODO only works for single terms, mapping fuzzy_factor
-            return { fuzzy => { $qualifier => { value => $term, max_expansions => 10, min_similarity => 0.75 } } };
+            return { fuzzy => { $qualifier => { value => $term, max_expansions => 10 } } };
         }
     }
     if ($term =~ /\s/) {
-        return { text_phrase => { $qualifier => { query => $term } } };
+        return { match_phrase => { $qualifier => { query => $term } } };
     }
-    { text => { $qualifier => { query => $term } } };
+    { match => { $qualifier => { query => $term } } };
 }
 
 1;
 
 =head1 NAME
 
-Catmandu::Store::ElasticSearch::CQL - Converts a CQL query string to a Elasticsearch query hashref
+Catmandu::Store::Elasticsearch::CQL - Converts a CQL query string to a Elasticsearch query hashref
 
 =head1 SYNOPSIS
 
-    $es_query = Catmandu::Store::ElasticSearch::CQL
+    $es_query = Catmandu::Store::Elasticsearch::CQL
         ->new(mapping => $cql_mapping)
         ->parse($cql_query_string);
 
