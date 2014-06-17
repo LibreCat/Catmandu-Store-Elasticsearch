@@ -11,6 +11,7 @@ with 'Catmandu::Searchable';
 with 'Catmandu::Buffer';
 
 has cql_mapping => (is => 'ro'); # TODO move to Searchable
+has on_error    => (is => 'ro', default => sub { 'IGNORE'} ); 
 
 sub generator {
     my ($self) = @_;
@@ -90,12 +91,12 @@ sub delete_by_query {
     $es->refresh_index;
 }
 
-sub commit { # TODO optimize, better error handling
+sub commit { # TODO optimize
     my ($self) = @_;
     return 1 unless $self->buffer_used;
-    my $err = $self->store->elastic_search->bulk(actions => $self->buffer, refresh => 1)->{errors};
+    $self->store->elastic_search->bulk(actions => $self->buffer, refresh => 1, on_error => $self->on_error);
     $self->clear_buffer;
-    return !defined $err, $err;
+    return 1;
 }
 
 sub search {

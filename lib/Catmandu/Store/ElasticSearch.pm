@@ -108,10 +108,15 @@ sub drop {
 
 =head1 METHODS
 
-=head2 new(index_name => $name, cql_mapping => \%mapping)
+=head2 new(index_name => $name)
 
-Create a new Catmandu::Store::ElasticSearch store connected to index $name. The
-store supports CQL searches when a cql_mapping is provided. This hash
+=head2 new(index_name => $name , bags => { data => { cql_mapping => \%mapping } })
+
+=head2 new(index_name => $name , index_mapping => $mapping)
+
+Create a new Catmandu::Store::ElasticSearch store connected to index $name. 
+
+The store supports CQL searches when a cql_mapping is provided. This hash
 contains a translation of CQL fields into Elasticsearch searchable fields.
 
  # Example mapping
@@ -153,10 +158,40 @@ subroutine which returns a string or an ARRAY of string with augmented title(s).
 
     1;
 
+Optionally, index_mappings contain Elastic Search schema mappings. E.g.
+
+    # The 'data' index can ony contain one field 'title' of type 'string'
+    index_mappings => {
+        data => {
+            dynamic => 'strict',
+            properties => {
+                title => { type => 'string' }
+            }
+        }
+    }
+
 =head2 drop
 
 Deletes the elasticsearch index backing this store. Calling functions after
 this may fail until this class is reinstantiated, creating a new index.
+
+=head1 ERROR HANDLING
+
+Error handling can be activated by specifying an error handling callback for index when creating
+a store. E.g. to create an error handler for the bag 'data' index use:
+
+    my $store = Catmandu::Store::ElasticSearch->new(
+                    index_name => 'catmandu'
+                    bags => { data => { on_error => \&error_handler } }
+                 });
+
+    sub error_handler {
+        my ($action, $document, $error, $req_no ) = @_;
+
+    }
+
+See: http://search.cpan.org/~drtech/ElasticSearch-0.68/lib/ElasticSearch.pm#Error_handlers for more
+information.
 
 =head1 SEE ALSO
 
@@ -168,8 +203,15 @@ Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>
 
 =head1 CONTRIBUTORS
 
-Dave Sherohman, C<< dave.sherohman at ub.lu.se >>
-Robin Sheat, C<< robin at kallisti.net.nz >>
+=over 4
+
+=item Dave Sherohman, C<< dave.sherohman at ub.lu.se >>
+
+=item Robin Sheat, C<< robin at kallisti.net.nz >>
+
+=item Patrick Hochstenbach, C<< patrick.hochstenbach at ugent.be >>
+
+=back
 
 =head1 LICENSE AND COPYRIGHT
 
