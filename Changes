@@ -1,6 +1,10 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 
+0.0206 2014-06-19
+       - batch error_handler
+       - pod
+
 0.0205 2014-03-10
        - switch to Search::Elasticsearch::Compat
        - store drop method
