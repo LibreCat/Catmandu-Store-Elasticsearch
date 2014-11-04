@@ -11,7 +11,7 @@ with 'Catmandu::Searchable';
 with 'Catmandu::Buffer';
 
 has cql_mapping => (is => 'ro'); # TODO move to Searchable
-has on_error    => (is => 'ro', default => sub { 'IGNORE'} ); 
+has on_error    => (is => 'ro', default => sub { 'IGNORE'} );
 
 sub generator {
     my ($self) = @_;
