@@ -252,6 +252,9 @@ sub _term_node {
                 map { _text_node($q, $_) } @$term;
             } @$qualifier ] } };
         } else {
+            if ($qualifier eq '_id') {
+                return { ids => { values => $term } };
+            }
             return { bool => { should => [map { _text_node($qualifier, $_) } @$term] } };
         }
     } elsif ($base eq 'all') {

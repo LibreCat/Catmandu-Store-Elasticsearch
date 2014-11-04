@@ -12,6 +12,7 @@ with 'Catmandu::Searchable';
 has buffer_size => (is => 'ro', lazy => 1, builder => 'default_buffer_size');
 has _bulk       => (is => 'ro', lazy => 1, builder => '_build_bulk');
 has cql_mapping => (is => 'ro');
+has on_error    => (is => 'ro', default => sub { 'IGNORE'} );
 
 sub default_buffer_size { 100 }
 
@@ -21,14 +22,11 @@ sub _build_bulk {
         index     => $self->store->index_name,
         type      => $self->name,
         max_count => $self->buffer_size,
-        on_error  => sub {
-            my ($action, $res, $i) = @_;
-            $self->log->error($res);
-        },
+        on_error  => $self->on_error,
     );
     if ($self->log->is_debug) {
         $args{on_success} = sub {
-            my ($action, $res, $i) = @_;
+            my ($action, $res, $i) = @_; # TODO return doc instead of index
             $self->log->debug($res);
         };
     }

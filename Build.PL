@@ -15,10 +15,10 @@ my $builder = Module::Build->new(
     },
     requires => {
         'perl' => '5.10.1',
-        'Catmandu' => '0.8',
+        'Catmandu' => '0.9206',
         'CQL::Parser' => '1.12',
         'Moo' => '1.00',
-        'Search::Elasticsearch' => '1.11',
+        'Search::Elasticsearch' => '1.14',
     },
     add_to_cleanup => [qw(
         Catmandu-Store-Elasticsearch-*
