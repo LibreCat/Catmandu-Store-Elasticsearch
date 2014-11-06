@@ -1,7 +1,6 @@
 Revision history for Catmandu-Store-Elasticsearch
 
-
-0.01    2014-04-29
-       - Continue development from Catmandu::Store::ElasticSearch with the
-         official Search::Elasticsearch client
+{{$NEXT}}
+  - Continue development from Catmandu::Store::ElasticSearch with the
+    official Search::Elasticsearch client
 
