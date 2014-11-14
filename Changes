@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-Elasticsearch
 
 {{$NEXT}}
+
+0.02  2014-11-14 17:17:54 CET
   - fix error handler bug
 
 0.01  2014-11-06 10:26:12 CET
