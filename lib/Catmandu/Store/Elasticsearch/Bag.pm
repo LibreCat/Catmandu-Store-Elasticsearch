@@ -12,7 +12,7 @@ with 'Catmandu::Searchable';
 has buffer_size => (is => 'ro', lazy => 1, builder => 'default_buffer_size');
 has _bulk       => (is => 'ro', lazy => 1, builder => '_build_bulk');
 has cql_mapping => (is => 'ro');
-has on_error    => (is => 'ro', default => sub { 'IGNORE'} );
+has on_error    => (is => 'ro', default => sub { sub { 'IGNORE' } } );
 
 sub default_buffer_size { 100 }
 
