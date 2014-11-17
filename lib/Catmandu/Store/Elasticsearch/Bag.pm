@@ -12,7 +12,7 @@ with 'Catmandu::Searchable';
 has buffer_size => (is => 'ro', lazy => 1, builder => 'default_buffer_size');
 has _bulk       => (is => 'ro', lazy => 1, builder => '_build_bulk');
 has cql_mapping => (is => 'ro');
-has on_error    => (is => 'ro', default => sub { sub { 'IGNORE' } } );
+has on_error    => (is => 'ro', default => sub { 'IGNORE' });
 
 sub default_buffer_size { 100 }
 
@@ -22,7 +22,7 @@ sub _build_bulk {
         index     => $self->store->index_name,
         type      => $self->name,
         max_count => $self->buffer_size,
-        on_error  => $self->on_error,
+        on_error  => \&{$self->on_error},
     );
     if ($self->log->is_debug) {
         $args{on_success} = sub {
@@ -60,11 +60,15 @@ sub count {
 
 sub get { # TODO ignore missing
     my ($self, $id) = @_;
-    $self->store->es->get_source(
-        index => $self->store->index_name,
-        type  => $self->name,
-        id    => $id,
-    );
+    try {
+        $self->store->es->get_source(
+            index => $self->store->index_name,
+            type  => $self->name,
+            id    => $id,
+        );
+   } catch_case [
+       'Search::Elasticsearch::Error::Missing' => sub { undef }
+   ];
 }
 
 sub add {

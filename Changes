@@ -1,6 +1,7 @@
 Revision history for Catmandu-Store-Elasticsearch
 
 {{$NEXT}}
+  - fix get missing doc
 
 0.02  2014-11-14 17:17:54 CET
   - fix error handler bug
