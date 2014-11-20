@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-Elasticsearch
 
 {{$NEXT}}
+
+0.0301  2014-11-20 11:01:09 CET
   - fix typo
 
 0.03  2014-11-17 10:23:11 CET

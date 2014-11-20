@@ -2,10 +2,6 @@
 
 Catmandu::Store::Elasticsearch - A searchable store backed by Elasticsearch
 
-# VERSION
-
-Version 0.01
-
 # SYNOPSIS
 
     use Catmandu::Store::Elasticsearch;

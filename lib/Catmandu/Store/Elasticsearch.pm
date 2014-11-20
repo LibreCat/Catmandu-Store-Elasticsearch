@@ -13,7 +13,7 @@ Catmandu::Store::Elasticsearch - A searchable store backed by Elasticsearch
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.0301';
 
 =head1 SYNOPSIS
 
