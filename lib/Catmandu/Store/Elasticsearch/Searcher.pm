@@ -23,9 +23,9 @@ sub generator {
         state $scroll = do {
             my $body = {query => $self->query};
             $body->{sort} = $self->sort if $self->sort;
-            $self->store->es->scroll_helper(
-                index       => $self->store->index_name,
-                type        => $self->name,
+            $self->bag->store->es->scroll_helper(
+                index       => $self->bag->store->index_name,
+                type        => $self->bag->name,
                 search_type => $self->sort ? 'query_then_fetch' : 'scan',
                 from        => $self->start,
                 size        => $self->bag->buffer_size, # TODO divide by number of shards
