@@ -1,15 +1,15 @@
-package Catmandu::Store::Elasticsearch;
+package Catmandu::Store::ElasticSearch;
 
 use Catmandu::Sane;
 use Moo;
 use Search::Elasticsearch;
-use Catmandu::Store::Elasticsearch::Bag;
+use Catmandu::Store::ElasticSearch::Bag;
 
 with 'Catmandu::Store';
 
 =head1 NAME
 
-Catmandu::Store::Elasticsearch - A searchable store backed by Elasticsearch
+Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
 
 =cut
 
@@ -17,9 +17,9 @@ our $VERSION = '0.0301';
 
 =head1 SYNOPSIS
 
-    use Catmandu::Store::Elasticsearch;
+    use Catmandu::Store::ElasticSearch;
 
-    my $store = Catmandu::Store::Elasticsearch->new(index_name => 'catmandu');
+    my $store = Catmandu::Store::ElasticSearch->new(index_name => 'catmandu');
 
     my $obj1 = $store->bag->add({ name => 'Patrick' });
 
@@ -44,7 +44,7 @@ our $VERSION = '0.0301';
     # Some stores can be searched
     my $hits = $store->bag->search(query => 'name:Patrick');
 
-    # Catmandu::Store::Elasticsearch supports CQL...
+    # Catmandu::Store::ElasticSearch supports CQL...
     my $hits = $store->bag->search(cql_query => 'name any "Patrick"');
 
 =cut
@@ -132,7 +132,7 @@ subroutine which returns a string or an ARRAY of string with augmented title(s).
 
     1;
 
-Optionally, index_mappings contain Elastic Search schema mappings. E.g.
+Optionally, index_mappings contain Elasticsearch schema mappings. E.g.
 
     # The 'data' index can ony contain one field 'title' of type 'string'
     index_mappings => {
@@ -146,7 +146,7 @@ Optionally, index_mappings contain Elastic Search schema mappings. E.g.
 
 =head2 drop
 
-Deletes the elasticsearch index backing this store. Calling functions after
+Deletes the Elasticsearch index backing this store. Calling functions after
 this may fail until this class is reinstantiated, creating a new index.
 
 =head1 COMPATIBILITY
@@ -166,9 +166,6 @@ a store. E.g. to create an error handler for the bag 'data' index use:
     sub error_handler {
         my ($action,$response,$i) = @_;
     }
-
-See: http://search.cpan.org/~drtech/ElasticSearch-0.68/lib/ElasticSearch.pm#Error_handlers for more
-information.
 
 =head1 SEE ALSO
 

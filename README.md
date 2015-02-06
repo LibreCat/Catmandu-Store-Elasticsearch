@@ -1,12 +1,12 @@
 # NAME
 
-Catmandu::Store::Elasticsearch - A searchable store backed by Elasticsearch
+Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
 
 # SYNOPSIS
 
-    use Catmandu::Store::Elasticsearch;
+    use Catmandu::Store::ElasticSearch;
 
-    my $store = Catmandu::Store::Elasticsearch->new(index_name => 'catmandu');
+    my $store = Catmandu::Store::ElasticSearch->new(index_name => 'catmandu');
 
     my $obj1 = $store->bag->add({ name => 'Patrick' });
 
@@ -31,7 +31,7 @@ Catmandu::Store::Elasticsearch - A searchable store backed by Elasticsearch
     # Some stores can be searched
     my $hits = $store->bag->search(query => 'name:Patrick');
 
-    # Catmandu::Store::Elasticsearch supports CQL...
+    # Catmandu::Store::ElasticSearch supports CQL...
     my $hits = $store->bag->search(cql_query => 'name any "Patrick"');
 
 # METHODS
@@ -86,7 +86,7 @@ subroutine which returns a string or an ARRAY of string with augmented title(s).
 
     1;
 
-Optionally, index\_mappings contain Elastic Search schema mappings. E.g.
+Optionally, index\_mappings contain Elasticsearch schema mappings. E.g.
 
     # The 'data' index can ony contain one field 'title' of type 'string'
     index_mappings => {
@@ -100,7 +100,7 @@ Optionally, index\_mappings contain Elastic Search schema mappings. E.g.
 
 ## drop
 
-Deletes the elasticsearch index backing this store. Calling functions after
+Deletes the Elasticsearch index backing this store. Calling functions after
 this may fail until this class is reinstantiated, creating a new index.
 
 # COMPATIBILITY
@@ -120,9 +120,6 @@ a store. E.g. to create an error handler for the bag 'data' index use:
     sub error_handler {
         my ($action,$response,$i) = @_;
     }
-
-See: http://search.cpan.org/~drtech/ElasticSearch-0.68/lib/ElasticSearch.pm#Error\_handlers for more
-information.
 
 # SEE ALSO
 

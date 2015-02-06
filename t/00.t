@@ -5,10 +5,10 @@ use warnings;
 use Test::More;
 
 my @pkgs = qw(
-    Catmandu::Store::Elasticsearch
-    Catmandu::Store::Elasticsearch::Bag
-    Catmandu::Store::Elasticsearch::Searcher
-    Catmandu::Store::Elasticsearch::CQL
+    Catmandu::Store::ElasticSearch
+    Catmandu::Store::ElasticSearch::Bag
+    Catmandu::Store::ElasticSearch::Searcher
+    Catmandu::Store::ElasticSearch::CQL
 );
 
 require_ok $_ for @pkgs;

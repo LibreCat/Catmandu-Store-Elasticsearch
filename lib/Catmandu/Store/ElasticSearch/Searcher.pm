@@ -1,4 +1,4 @@
-package Catmandu::Store::Elasticsearch::Searcher;
+package Catmandu::Store::ElasticSearch::Searcher;
 
 use Catmandu::Sane;
 use Moo;

@@ -1,4 +1,4 @@
-package Catmandu::Store::Elasticsearch::CQL;
+package Catmandu::Store::ElasticSearch::CQL;
 
 use Catmandu::Sane;
 use Catmandu::Util qw(require_package trim);
@@ -312,11 +312,11 @@ sub _text_node {
 
 =head1 NAME
 
-Catmandu::Store::Elasticsearch::CQL - Converts a CQL query string to a Elasticsearch query hashref
+Catmandu::Store::ElasticSearch::CQL - Converts a CQL query string to a Elasticsearch query hashref
 
 =head1 SYNOPSIS
 
-    $es_query = Catmandu::Store::Elasticsearch::CQL
+    $es_query = Catmandu::Store::ElasticSearch::CQL
         ->new(mapping => $cql_mapping)
         ->parse($cql_query_string);
 

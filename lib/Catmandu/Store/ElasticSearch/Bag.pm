@@ -1,10 +1,10 @@
-package Catmandu::Store::Elasticsearch::Bag;
+package Catmandu::Store::ElasticSearch::Bag;
 
 use Catmandu::Sane;
 use Moo;
 use Catmandu::Hits;
-use Catmandu::Store::Elasticsearch::Searcher;
-use Catmandu::Store::Elasticsearch::CQL;
+use Catmandu::Store::ElasticSearch::Searcher;
+use Catmandu::Store::ElasticSearch::CQL;
 
 with 'Catmandu::Bag';
 with 'Catmandu::Searchable';
@@ -169,7 +169,7 @@ sub search {
 
 sub searcher {
     my ($self, %args) = @_;
-    Catmandu::Store::Elasticsearch::Searcher->new(%args, bag => $self);
+    Catmandu::Store::ElasticSearch::Searcher->new(%args, bag => $self);
 }
 
 sub translate_sru_sortkeys {
@@ -201,7 +201,7 @@ sub _translate_sru_sortkey {
 
 sub translate_cql_query {
     my ($self, $query) = @_;
-    Catmandu::Store::Elasticsearch::CQL->new(mapping => $self->cql_mapping)->parse($query);
+    Catmandu::Store::ElasticSearch::CQL->new(mapping => $self->cql_mapping)->parse($query);
 }
 
 sub normalize_query {

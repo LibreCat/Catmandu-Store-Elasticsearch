@@ -1,6 +1,8 @@
-Revision history for Catmandu-Store-Elasticsearch
+Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+  - revert to the Catmandu::Store::ElasticSearch name to avoid
+    installation troubles
 
 0.0301  2014-11-20 11:01:09 CET
   - fix typo

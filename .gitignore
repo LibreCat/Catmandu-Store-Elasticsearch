@@ -10,4 +10,4 @@ Makefile.PL
 MANIFEST*
 META.*
 MYMETA.*
-Catmandu-Store-Elasticsearch-*
+Catmandu-Store-ElasticSearch-*
