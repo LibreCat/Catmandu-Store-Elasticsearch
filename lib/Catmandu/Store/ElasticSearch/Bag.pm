@@ -152,7 +152,7 @@ sub search {
 
     $hits = Catmandu::Hits->new($hits);
 
-    for my $key (qw(facets suggest)) {
+    for my $key (qw(facets suggest aggregations)) {
         $hits->{$key} = $res->{$key} if exists $args{$key};
     }
 
