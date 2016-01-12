@@ -1,6 +1,7 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+  - drop support
 
 0.0305  2015-10-15 13:24:08 CEST
   - fix on_error bug
