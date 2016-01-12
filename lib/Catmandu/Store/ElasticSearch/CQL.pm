@@ -1,10 +1,13 @@
 package Catmandu::Store::ElasticSearch::CQL;
 
 use Catmandu::Sane;
+
+our $VERSION = '0.0305';
+
 use Catmandu::Util qw(require_package trim);
-use Carp qw(confess);
 use CQL::Parser;
 use Moo;
+use namespace::clean;
 
 has parser  => (is => 'ro', lazy => 1, builder => '_build_parser');
 has mapping => (is => 'ro');
@@ -102,8 +105,10 @@ sub _parse_term_node {
     if ($self->mapping and my $indexes = $self->mapping->{indexes}) {
         $qualifier = lc $qualifier;
         $qualifier =~ s/(?<=[^_])_(?=[^_])//g if $self->mapping->{strip_separating_underscores};
-        my $mapping = $indexes->{$qualifier} or confess "cql error: unknown index $qualifier";
-        $mapping->{op}{$base} or confess "cql error: relation $base not allowed";
+        my $mapping = $indexes->{$qualifier}
+            or Catmandu::Error->throw("cql error: unknown index $qualifier");
+        $mapping->{op}{$base}
+            or Catmandu::Error->throw("cql error: relation $base not allowed");
         my $op = $mapping->{op}{$base};
         if (ref $op && $op->{field}) {
             $qualifier = $op->{field};
@@ -310,6 +315,10 @@ sub _text_node {
 
 1;
 
+__END__
+
+=pod
+
 =head1 NAME
 
 Catmandu::Store::ElasticSearch::CQL - Converts a CQL query string to a Elasticsearch query hashref
@@ -368,4 +377,3 @@ support cql 1.2, more modifiers (esp. all of masked), sortBy, encloses
 L<CQL::Parser>.
 
 =cut
-

@@ -8,5 +8,6 @@ on 'test', sub {
 requires 'Catmandu', '0.9206';
 requires 'CQL::Parser', '1.12';
 requires 'Moo', '1.0';
+requires 'namespace::clean', '0.24';
 requires 'Search::Elasticsearch', '1.14';
 

@@ -27,6 +27,7 @@ my %module_build_args = (
     "Catmandu" => "0.9206",
     "Moo" => "1.0",
     "Search::Elasticsearch" => "1.14",
+    "namespace::clean" => "0.24",
     "perl" => "v5.10.1"
   },
   "test_requires" => {

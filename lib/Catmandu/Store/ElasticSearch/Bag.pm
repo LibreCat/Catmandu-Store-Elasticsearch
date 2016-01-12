@@ -1,6 +1,9 @@
 package Catmandu::Store::ElasticSearch::Bag;
 
 use Catmandu::Sane;
+
+our $VERSION = '0.0305';
+
 use Moo;
 use Catmandu::Hits;
 use Catmandu::Store::ElasticSearch::Searcher;
@@ -215,10 +218,20 @@ sub normalize_query {
     }
 }
 
+sub drop {
+    my ($self) = @_;
+    $self->delete_all;
+    $self->commit;
+}
+
+1;
+
+__END__
+
+=pod
+
 =head1 SEE ALSO
 
 L<Catmandu::Bag>, L<Catmandu::Searchable>
 
 =cut
-
-1;

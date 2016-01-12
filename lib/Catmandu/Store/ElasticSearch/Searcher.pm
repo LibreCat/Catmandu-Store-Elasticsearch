@@ -1,7 +1,11 @@
 package Catmandu::Store::ElasticSearch::Searcher;
 
 use Catmandu::Sane;
+
+our $VERSION = '0.0305';
+
 use Moo;
+use namespace::clean;
 
 with 'Catmandu::Iterable';
 
@@ -67,3 +71,5 @@ sub count {
 }
 
 1;
+
+__END__

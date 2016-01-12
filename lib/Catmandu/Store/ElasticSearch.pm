@@ -1,19 +1,56 @@
 package Catmandu::Store::ElasticSearch;
 
 use Catmandu::Sane;
+
+our $VERSION = '0.0305';
+
 use Moo;
 use Search::Elasticsearch;
 use Catmandu::Store::ElasticSearch::Bag;
+use namespace::clean;
 
 with 'Catmandu::Store';
+
+has index_name     => (is => 'ro', required => 1);
+has index_settings => (is => 'ro', lazy => 1, default => sub { +{} });
+has index_mappings => (is => 'ro', lazy => 1, default => sub { +{} });
+has _es_args       => (is => 'rw', lazy => 1, default => sub { +{} });
+has es             => (is => 'lazy');
+
+sub _build_es {
+    my ($self) = @_;
+    my $es = Search::Elasticsearch->new($self->_es_args);
+    unless ($es->indices->exists(index => $self->index_name)) {
+        $es->indices->create(
+            index => $self->index_name,
+            body  => {
+                settings => $self->index_settings,
+                mappings => $self->index_mappings,
+            },
+        );
+    }
+    $es;
+}
+
+sub BUILD {
+    my ($self, $args) = @_;
+    $self->_es_args($args);
+}
+
+sub drop {
+    my ($self) = @_;
+    $self->es->indices->delete(index => $self->index_name);
+}
+
+1;
+
+__END__
+
+=pod
 
 =head1 NAME
 
 Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
-
-=cut
-
-our $VERSION = '0.0305';
 
 =head1 SYNOPSIS
 
@@ -46,39 +83,6 @@ our $VERSION = '0.0305';
 
     # Catmandu::Store::ElasticSearch supports CQL...
     my $hits = $store->bag->search(cql_query => 'name any "Patrick"');
-
-=cut
-
-has index_name     => (is => 'ro', required => 1);
-has index_settings => (is => 'ro', lazy => 1, default => sub { +{} });
-has index_mappings => (is => 'ro', lazy => 1, default => sub { +{} });
-has _es_args       => (is => 'rw', lazy => 1, default => sub { +{} });
-has es             => (is => 'lazy');
-
-sub _build_es {
-    my ($self) = @_;
-    my $es = Search::Elasticsearch->new($self->_es_args);
-    unless ($es->indices->exists(index => $self->index_name)) {
-        $es->indices->create(
-            index => $self->index_name,
-            body  => {
-                settings => $self->index_settings,
-                mappings => $self->index_mappings,
-            },
-        );
-    }
-    $es;
-}
-
-sub BUILD {
-    my ($self, $args) = @_;
-    $self->_es_args($args);
-}
-
-sub drop {
-    my ($self) = @_;
-    $self->es->indices->delete(index => $self->index_name);
-}
 
 =head1 METHODS
 
@@ -196,5 +200,3 @@ by the Free Software Foundation; or the Artistic License.
 See http://dev.perl.org/licenses/ for more information.
 
 =cut
-
-1;
