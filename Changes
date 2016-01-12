@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+
+0.0306  2016-01-12 11:21:12 CET
   - drop support
 
 0.0305  2015-10-15 13:24:08 CEST
