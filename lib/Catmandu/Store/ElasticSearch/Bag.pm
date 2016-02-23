@@ -102,6 +102,9 @@ sub delete_all { # TODO refresh
 sub delete_by_query { # TODO refresh
     my ($self, %args) = @_;
     my $es = $self->store->es;
+    unless ($es->can('delete_by_query')) {
+        Catmandu::NotImplemented->throw('delete_by_query support not available');
+    }
     $es->delete_by_query(
         index => $self->store->index_name,
         type  => $self->name,

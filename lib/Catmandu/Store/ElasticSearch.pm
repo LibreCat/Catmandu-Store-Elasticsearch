@@ -11,11 +11,11 @@ use namespace::clean;
 
 with 'Catmandu::Store';
 
-has index_name     => (is => 'ro', required => 1);
+has index_name => (is => 'ro', required => 1);
 has index_settings => (is => 'ro', lazy => 1, default => sub { +{} });
 has index_mappings => (is => 'ro', lazy => 1, default => sub { +{} });
-has _es_args       => (is => 'rw', lazy => 1, default => sub { +{} });
-has es             => (is => 'lazy');
+has _es_args => (is => 'rw', lazy => 1, default => sub { +{} });
+has es => (is => 'lazy');
 
 sub _build_es {
     my ($self) = @_;
