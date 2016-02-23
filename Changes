@@ -1,6 +1,9 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+  - add the Catmandu::Droppable role to the store and bag
+  - check delete_by_query support
+  - no longer store _id in doc (es >= 2.0 compat)
 
 0.0306  2016-01-12 11:21:12 CET
   - drop support

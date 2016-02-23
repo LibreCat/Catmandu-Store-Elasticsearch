@@ -5,7 +5,7 @@ on 'test', sub {
   requires 'Test::More', '1.001003';
 };
 
-requires 'Catmandu', '0.9206';
+requires 'Catmandu', '1.00';
 requires 'CQL::Parser', '1.12';
 requires 'Moo', '1.0';
 requires 'namespace::clean', '0.24';

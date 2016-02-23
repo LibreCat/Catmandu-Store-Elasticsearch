@@ -10,6 +10,7 @@ use Catmandu::Store::ElasticSearch::Bag;
 use namespace::clean;
 
 with 'Catmandu::Store';
+with 'Catmandu::Droppable';
 
 has index_name => (is => 'ro', required => 1);
 has index_settings => (is => 'ro', lazy => 1, default => sub { +{} });

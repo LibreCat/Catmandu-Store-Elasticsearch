@@ -10,6 +10,7 @@ use Catmandu::Store::ElasticSearch::Searcher;
 use Catmandu::Store::ElasticSearch::CQL;
 
 with 'Catmandu::Bag';
+with 'Catmandu::Droppable';
 with 'Catmandu::Searchable';
 
 has buffer_size => (is => 'ro', lazy => 1, builder => 'default_buffer_size');
@@ -49,6 +50,7 @@ sub generator {
             },
         );
         my $data = $scroll->next // return;
+        $data->{_source}{_id} = $data->{_id};
         $data->{_source};
     };
 }
@@ -61,14 +63,16 @@ sub count {
     )->{count};
 }
 
-sub get { # TODO ignore missing
+sub get {
     my ($self, $id) = @_;
     try {
-        $self->store->es->get_source(
+        my $source = $self->store->es->get_source(
             index => $self->store->index_name,
             type  => $self->name,
             id    => $id,
         );
+        $source->{_id} = $id;
+        $source;
    } catch_case [
        'Search::Elasticsearch::Error::Missing' => sub { undef }
    ];
@@ -76,8 +80,10 @@ sub get { # TODO ignore missing
 
 sub add {
     my ($self, $data) = @_;
+    $data = {%$data};
+    my $id = delete $data->{_id};
     $self->_bulk->index({
-        id     => $data->{_id},
+        id     => $id,
         source => $data,
     });
 }
@@ -153,7 +159,7 @@ sub search {
     } elsif ($args{fields}) {
         $hits->{hits} = [ map { $_->{fields} || {} } @$docs ];
     } else {
-        $hits->{hits} = [ map { $_->{_source} } @$docs ];
+        $hits->{hits} = [ map { my $source = $_->{_source}; $source->{_id} = $_->{_id}; $source } @$docs ];
     }
 
     $hits = Catmandu::Hits->new($hits);

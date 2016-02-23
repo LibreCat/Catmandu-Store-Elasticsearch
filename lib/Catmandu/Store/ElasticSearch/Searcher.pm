@@ -41,7 +41,9 @@ sub generator {
         if ($total) {
             $total--;
         }
-        $data->{_source};
+        my $source = $data->{_source};
+        $source->{_id} = $data->{_id};
+        $source;
     };
 }
 
