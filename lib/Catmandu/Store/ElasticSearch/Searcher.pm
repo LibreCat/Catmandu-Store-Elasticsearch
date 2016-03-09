@@ -18,6 +18,7 @@ has sort  => (is => 'ro');
 
 sub generator {
     my ($self) = @_;
+    my $store = $self->bag->store;
     sub {
         state $total = $self->total;
         if (defined $total) {
@@ -27,8 +28,8 @@ sub generator {
         state $scroll = do {
             my $body = {query => $self->query};
             $body->{sort} = $self->sort if $self->sort;
-            $self->bag->store->es->scroll_helper(
-                index       => $self->bag->store->index_name,
+            $store->es->scroll_helper(
+                index       => $store->index_name,
                 type        => $self->bag->name,
                 search_type => $self->sort ? 'query_then_fetch' : 'scan',
                 from        => $self->start,
@@ -41,9 +42,7 @@ sub generator {
         if ($total) {
             $total--;
         }
-        my $source = $data->{_source};
-        $source->{_id} = $data->{_id};
-        $source;
+        $store->unescape_reserved_keys($data->{_source});
     };
 }
 

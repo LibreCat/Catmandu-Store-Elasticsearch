@@ -27,6 +27,7 @@ sub _build_bulk {
         type      => $self->name,
         max_count => $self->buffer_size,
         on_error  => \&{$self->on_error},
+        refresh   => 1,
     );
     if ($self->log->is_debug) {
         $args{on_success} = sub {
@@ -50,8 +51,7 @@ sub generator {
             },
         );
         my $data = $scroll->next // return;
-        $data->{_source}{_id} = $data->{_id};
-        $data->{_source};
+        $self->store->unescape_reserved_keys($data->{_source});
     };
 }
 
@@ -71,8 +71,7 @@ sub get {
             type  => $self->name,
             id    => $id,
         );
-        $source->{_id} = $id;
-        $source;
+        $self->store->unescape_reserved_keys($source);
    } catch_case [
        'Search::Elasticsearch::Error::Missing' => sub { undef }
    ];
@@ -81,10 +80,10 @@ sub get {
 sub add {
     my ($self, $data) = @_;
     $data = {%$data};
-    my $id = delete $data->{_id};
+    my $id = $data->{_id};
     $self->_bulk->index({
         id     => $id,
-        source => $data,
+        source => $self->store->escape_reserved_keys($data),
     });
 }
 
@@ -93,27 +92,32 @@ sub delete {
     $self->_bulk->delete({id => $id});
 }
 
-sub delete_all { # TODO refresh
+sub delete_all {
     my ($self) = @_;
     my $es = $self->store->es;
+    unless ($es->can('delete_by_query')) { # TODO moved to plugin
+        Catmandu::NotImplemented->throw('delete_by_query support not available');
+    }
     $es->delete_by_query(
         index => $self->store->index_name,
         type  => $self->name,
+        refresh => 1,
         body  => {
             query => {match_all => {}},
         },
     );
 }
 
-sub delete_by_query { # TODO refresh
+sub delete_by_query {
     my ($self, %args) = @_;
     my $es = $self->store->es;
-    unless ($es->can('delete_by_query')) {
+    unless ($es->can('delete_by_query')) { # TODO moved to plugin
         Catmandu::NotImplemented->throw('delete_by_query support not available');
     }
     $es->delete_by_query(
         index => $self->store->index_name,
         type  => $self->name,
+        refresh => 1,
         body  => {
             query => $args{query},
         },
@@ -157,9 +161,9 @@ sub search {
     if ($bag) {
         $hits->{hits} = [ map { $bag->get($_->{_id}) } @$docs ];
     } elsif ($args{fields}) {
-        $hits->{hits} = [ map { $_->{fields} || {} } @$docs ];
+        $hits->{hits} = [ map { $self->store->unescape_reserved_keys($_->{fields} || {}) } @$docs ];
     } else {
-        $hits->{hits} = [ map { my $source = $_->{_source}; $source->{_id} = $_->{_id}; $source } @$docs ];
+        $hits->{hits} = [ map { $self->store->unescape_reserved_keys($_->{source}) } @$docs ];
     }
 
     $hits = Catmandu::Hits->new($hits);

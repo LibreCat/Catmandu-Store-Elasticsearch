@@ -17,6 +17,7 @@ has index_settings => (is => 'ro', lazy => 1, default => sub { +{} });
 has index_mappings => (is => 'ro', lazy => 1, default => sub { +{} });
 has _es_args => (is => 'rw', lazy => 1, default => sub { +{} });
 has es => (is => 'lazy');
+has reserved_key_prefix => (is => 'lazy');
 
 sub _build_es {
     my ($self) = @_;
@@ -33,6 +34,10 @@ sub _build_es {
     $es;
 }
 
+sub _build_reserved_key_prefix {
+    'catmandu';
+}
+
 sub BUILD {
     my ($self, $args) = @_;
     $self->_es_args($args);
@@ -41,6 +46,30 @@ sub BUILD {
 sub drop {
     my ($self) = @_;
     $self->es->indices->delete(index => $self->index_name);
+}
+
+sub escape_reserved_keys {
+    my ($self, $data) = @_;
+    my $prefix = $self->reserved_key_prefix;
+    for my $key (keys %$data) {
+      my $old_key = $key;
+      if ($key =~ s/^_([^_].*[^_])$/${prefix}_$1/) {
+          $data->{$key} = delete $data->{$old_key};
+      }
+    }
+    $data;
+}
+
+sub unescape_reserved_keys {
+    my ($self, $data) = @_;
+    my $prefix = $self->reserved_key_prefix;
+    for my $key (keys %$data) {
+      my $old_key = $key;
+      if ($key =~ s/^${prefix}_(.+)$/_$1/) {
+          $data->{$key} = delete $data->{$old_key};
+      }
+    }
+    $data;
 }
 
 1;
