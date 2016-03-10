@@ -95,33 +95,47 @@ sub delete {
 sub delete_all {
     my ($self) = @_;
     my $es = $self->store->es;
-    unless ($es->can('delete_by_query')) { # TODO moved to plugin
-        Catmandu::NotImplemented->throw('delete_by_query support not available');
+    if ($es->can('delete_by_query')) {
+        $es->delete_by_query(
+            index => $self->store->index_name,
+            type  => $self->name,
+            refresh => 1,
+            body  => {
+                query => {match_all => {}},
+            },
+        );
+    } else { # TODO document plugin needed for es >= 2.0
+        $es->transport->perform_request(
+            method => 'DELETE',
+            path   => '/'.$self->store->index_name.'/'.$self->name.'/_query',
+            body   => {
+                query => {match_all => {}},
+            }
+        );
     }
-    $es->delete_by_query(
-        index => $self->store->index_name,
-        type  => $self->name,
-        refresh => 1,
-        body  => {
-            query => {match_all => {}},
-        },
-    );
 }
 
 sub delete_by_query {
     my ($self, %args) = @_;
     my $es = $self->store->es;
-    unless ($es->can('delete_by_query')) { # TODO moved to plugin
-        Catmandu::NotImplemented->throw('delete_by_query support not available');
+    if ($es->can('delete_by_query')) {
+        $es->delete_by_query(
+            index => $self->store->index_name,
+            type  => $self->name,
+            refresh => 1,
+            body  => {
+                query => $args{query},
+            },
+        );
+    } else { # TODO document plugin needed for es >= 2.0
+        $es->transport->perform_request(
+            method => 'DELETE',
+            path   => '/'.$self->store->index_name.'/'.$self->name.'/_query',
+            body   => {
+                query => $args{query},
+            }
+        );
     }
-    $es->delete_by_query(
-        index => $self->store->index_name,
-        type  => $self->name,
-        refresh => 1,
-        body  => {
-            query => $args{query},
-        },
-    );
 }
 
 sub commit {
@@ -163,7 +177,7 @@ sub search {
     } elsif ($args{fields}) {
         $hits->{hits} = [ map { $self->store->unescape_reserved_keys($_->{fields} || {}) } @$docs ];
     } else {
-        $hits->{hits} = [ map { $self->store->unescape_reserved_keys($_->{source}) } @$docs ];
+        $hits->{hits} = [ map { $self->store->unescape_reserved_keys($_->{_source}) } @$docs ];
     }
 
     $hits = Catmandu::Hits->new($hits);
