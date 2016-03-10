@@ -27,7 +27,6 @@ sub _build_bulk {
         type      => $self->name,
         max_count => $self->buffer_size,
         on_error  => \&{$self->on_error},
-        refresh   => 1,
     );
     if ($self->log->is_debug) {
         $args{on_success} = sub {
@@ -98,17 +97,16 @@ sub delete_all {
     if ($es->can('delete_by_query')) {
         $es->delete_by_query(
             index => $self->store->index_name,
-            type  => $self->name,
-            refresh => 1,
-            body  => {
+            type => $self->name,
+            body => {
                 query => {match_all => {}},
             },
         );
     } else { # TODO document plugin needed for es >= 2.0
         $es->transport->perform_request(
             method => 'DELETE',
-            path   => '/'.$self->store->index_name.'/'.$self->name.'/_query',
-            body   => {
+            path => '/'.$self->store->index_name.'/'.$self->name.'/_query',
+            body => {
                 query => {match_all => {}},
             }
         );
@@ -121,17 +119,16 @@ sub delete_by_query {
     if ($es->can('delete_by_query')) {
         $es->delete_by_query(
             index => $self->store->index_name,
-            type  => $self->name,
-            refresh => 1,
-            body  => {
+            type => $self->name,
+            body => {
                 query => $args{query},
             },
         );
     } else { # TODO document plugin needed for es >= 2.0
         $es->transport->perform_request(
             method => 'DELETE',
-            path   => '/'.$self->store->index_name.'/'.$self->name.'/_query',
-            body   => {
+            path => '/'.$self->store->index_name.'/'.$self->name.'/_query',
+            body => {
                 query => $args{query},
             }
         );
@@ -141,6 +138,10 @@ sub delete_by_query {
 sub commit {
     my ($self) = @_;
     $self->_bulk->flush;
+    $self->store->es->transport->perform_request(
+        method => 'POST',
+        path => '/'.$self->store->index_name.'/_refresh',
+    );
 }
 
 sub search {
