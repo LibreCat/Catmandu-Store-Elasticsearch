@@ -107,6 +107,36 @@ this may fail until this class is reinstantiated, creating a new index.
 
 This store expects version 1.0 or higher of the Elasticsearch server.
 
+Note that Elasticsearch >= 2.0 doesn't like keys that start with an underscore such as
+`_id`. You can use the `key_prefix` option at store level or `id_prefix` at
+bag level to handle this.
+
+    # in your catmandu.yml
+    store:
+      yourstore:
+        package: ElasticSearch
+        options:
+          # use my_id instead of _id
+          key_prefix: my_
+
+If you want to use the `delete_by_query` method with Elasticsearch >= 2.0 you
+will have to [install the delete by query plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/current/plugins-delete-by-query.html).
+
+# MIGRATING A STORE FROM ELASTICSEARCH 1.0 TO 2.0 OR HIGHER
+
+1\. backup your data as JSON
+
+    catmandu export yourstore --bag yourbag to --file /path/to/yourbag.json -v
+
+2\. upgrade the Elasticsearch server
+
+3\. update your catmandu.yml with a `key_prefix` or `id_prefix` (see COMPATIBILITY)
+
+4\. import your data using the new keys specified in your catmandu.yml
+
+    catmandu import --file /path/to/yourbag.json --fix 'move_field(_id, my_id)' \
+    to yourstore --bag yourbag -v
+
 # ERROR HANDLING
 
 Error handling can be activated by specifying an error handling callback for index when creating
@@ -118,7 +148,7 @@ a store. E.g. to create an error handler for the bag 'data' index use:
                  });
 
     sub error_handler {
-        my ($action,$response,$i) = @_;
+        my ($action, $response, $i) = @_;
     }
 
 # SEE ALSO

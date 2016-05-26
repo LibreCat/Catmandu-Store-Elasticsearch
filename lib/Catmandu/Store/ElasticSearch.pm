@@ -179,11 +179,15 @@ will have to L<install the delete by query plugin|https://www.elastic.co/guide/e
 
     catmandu export yourstore --bag yourbag to --file /path/to/yourbag.json -v
 
-2. upgrade the Elasticsearch server
+2. drop the store
 
-3. update your catmandu.yml with a C<key_prefix> or C<id_prefix> (see COMPATIBILITY)
+    catmandu drop yourstore
 
-4. import your data using the new keys specified in your catmandu.yml
+3. upgrade the Elasticsearch server
+
+4. update your catmandu.yml with a C<key_prefix> or C<id_prefix> (see COMPATIBILITY)
+
+5. import your data using the new keys specified in your catmandu.yml
 
     catmandu import --file /path/to/yourbag.json --fix 'move_field(_id, my_id)' \
     to yourstore --bag yourbag -v
