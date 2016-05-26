@@ -50,7 +50,7 @@ sub generator {
             },
         );
         my $data = $scroll->next // return;
-        $self->store->unescape_reserved_keys($data->{_source});
+        $data->{_source};
     };
 }
 
@@ -65,12 +65,11 @@ sub count {
 sub get {
     my ($self, $id) = @_;
     try {
-        my $source = $self->store->es->get_source(
+        $self->store->es->get_source(
             index => $self->store->index_name,
             type  => $self->name,
             id    => $id,
         );
-        $self->store->unescape_reserved_keys($source);
    } catch_case [
        'Search::Elasticsearch::Error::Missing' => sub { undef }
    ];
@@ -79,10 +78,10 @@ sub get {
 sub add {
     my ($self, $data) = @_;
     $data = {%$data};
-    my $id = $data->{_id};
+    my $id = $data->{$self->id_key};
     $self->_bulk->index({
         id     => $id,
-        source => $self->store->escape_reserved_keys($data),
+        source => $data,
     });
 }
 
@@ -147,6 +146,8 @@ sub commit {
 sub search {
     my ($self, %args) = @_;
 
+    my $id_key = $self->id_key;
+
     my $start = delete $args{start};
     my $limit = delete $args{limit};
     my $bag   = delete $args{reify};
@@ -174,11 +175,11 @@ sub search {
     };
 
     if ($bag) {
-        $hits->{hits} = [ map { $bag->get($_->{_id}) } @$docs ];
+        $hits->{hits} = [ map { $bag->get($_->{$id_key}) } @$docs ];
     } elsif ($args{fields}) {
-        $hits->{hits} = [ map { $self->store->unescape_reserved_keys($_->{fields} || {}) } @$docs ];
+        $hits->{hits} = [ map { $_->{fields} || +{} } @$docs ];
     } else {
-        $hits->{hits} = [ map { $self->store->unescape_reserved_keys($_->{_source}) } @$docs ];
+        $hits->{hits} = [ map { $_->{_source} } @$docs ];
     }
 
     $hits = Catmandu::Hits->new($hits);
@@ -190,7 +191,7 @@ sub search {
     if ($args{highlight}) {
         for my $hit (@$docs) {
             if (my $hl = $hit->{highlight}) {
-                $hits->{highlight}{$hit->{_id}} = $hl;
+                $hits->{highlight}{$hit->{$id_key}} = $hl;
             }
         }
     }
@@ -232,7 +233,8 @@ sub _translate_sru_sortkey {
 
 sub translate_cql_query {
     my ($self, $query) = @_;
-    Catmandu::Store::ElasticSearch::CQL->new(mapping => $self->cql_mapping)->parse($query);
+    Catmandu::Store::ElasticSearch::CQL->new(mapping => $self->cql_mapping,
+        id_key => $self->id_key)->parse($query);
 }
 
 sub normalize_query {

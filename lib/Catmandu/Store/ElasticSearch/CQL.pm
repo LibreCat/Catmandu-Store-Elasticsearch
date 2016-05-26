@@ -10,7 +10,8 @@ use Moo;
 use namespace::clean;
 
 has parser  => (is => 'ro', lazy => 1, builder => '_build_parser');
-has mapping => (is => 'ro');
+has mapping => (is => 'ro', required => 1);
+has id_key  => (is => 'ro', required => 1);
 
 my $RE_ANY_FIELD = qr'^(srw|cql)\.(serverChoice|anywhere)$'i;
 my $RE_MATCH_ALL = qr'^(srw|cql)\.allRecords$'i;
@@ -139,7 +140,7 @@ sub _parse_term_node {
     }
 
     # TODO just pass query around
-    my $es_node = _term_node($base, $qualifier, $term, @modifiers);
+    my $es_node = $self->_term_node($base, $qualifier, $term, @modifiers);
 
     if ($nested) {
         if ($nested->{query}) {
@@ -178,22 +179,22 @@ sub _parse_prox_node {
 }
 
 sub _term_node {
-    my ($base, $qualifier, $term, @modifiers) = @_;
+    my ($self, $base, $qualifier, $term, @modifiers) = @_;
     my $q;
     if ($base eq '=') {
         if (ref $qualifier) {
             return { bool => { should => [ map {
-                if ($_ eq '_id') {
+                if ($_ eq $self->id_key) {
                     { ids => { values => [$term] } };
                 } else {
-                    _text_node($_, $term, @modifiers);
+                    $self->_text_node($_, $term, @modifiers);
                 }
             } @$qualifier ] } };
         } else {
-            if ($qualifier eq '_id') {
+            if ($qualifier eq $self->id_key) {
                 return { ids => { values => [$term] } };
             }
-            return _text_node($qualifier, $term, @modifiers);
+            return $self->_text_node($qualifier, $term, @modifiers);
         }
     } elsif ($base eq '<') {
         if (ref $qualifier) {
@@ -222,14 +223,14 @@ sub _term_node {
     } elsif ($base eq '<>') {
         if (ref $qualifier) {
             return { bool => { must_not => [ map {
-                if ($_ eq '_id') {
+                if ($_ eq $self->id_key) {
                     { ids => { values => [$term] } };
                 } else {
                     { match_phrase => { $_ => { query => $term } } };
                 }
             } @$qualifier ] } };
         } else {
-            if ($qualifier eq '_id') {
+            if ($qualifier eq $self->id_key) {
                 return { bool => { must_not => [ { ids => { values => [$term] } } ] } };
             }
             return { bool => { must_not => [ { match_phrase => { $qualifier => { query => $term } } } ] } };
@@ -237,14 +238,14 @@ sub _term_node {
     } elsif ($base eq 'exact') {
         if (ref $qualifier) {
             return { bool => { should => [ map {
-                if ($_ eq '_id') {
+                if ($_ eq $self->id_key) {
                     { ids => { values => [$term] } };
                 } else {
                     { match_phrase => { $_ => { query => $term } } };
                 }
             } @$qualifier ] } };
         } else {
-            if ($qualifier eq '_id') {
+            if ($qualifier eq $self->id_key) {
                 return { ids => { values => [$term] } };
             }
             return {match_phrase => { $qualifier => { query => $term } } };
@@ -254,23 +255,23 @@ sub _term_node {
         if (ref $qualifier) {
             return { bool => { should => [ map {
                 $q = $_;
-                map { _text_node($q, $_) } @$term;
+                map { $self->_text_node($q, $_) } @$term;
             } @$qualifier ] } };
         } else {
-            if ($qualifier eq '_id') {
+            if ($qualifier eq $self->id_key) {
                 return { ids => { values => $term } };
             }
-            return { bool => { should => [map { _text_node($qualifier, $_) } @$term] } };
+            return { bool => { should => [map { $self->_text_node($qualifier, $_) } @$term] } };
         }
     } elsif ($base eq 'all') {
         $term = [split /\s+/, trim($term)];
         if (ref $qualifier) {
             return { bool => { should => [ map {
                 $q = $_;
-                { bool => { must => [map { _text_node($q, $_) } @$term] } };
+                { bool => { must => [map { $self->_text_node($q, $_) } @$term] } };
             } @$qualifier ] } };
         } else {
-            return { bool => { must => [map { _text_node($qualifier, $_) } @$term] } };
+            return { bool => { must => [map { $self->_text_node($qualifier, $_) } @$term] } };
         }
     } elsif ($base eq 'within') {
         my @range = split /\s+/, $term;
@@ -290,15 +291,15 @@ sub _term_node {
 
     if (ref $qualifier) {
         return { bool => { should => [ map {
-            _text_node($_, $term, @modifiers);
+            $self->_text_node($_, $term, @modifiers);
         } @$qualifier ] } };
     } else {
-        return _text_node($qualifier, $term, @modifiers);
+        return $self->_text_node($qualifier, $term, @modifiers);
     }
 }
 
 sub _text_node {
-    my ($qualifier, $term, @modifiers) = @_;
+    my ($self, $qualifier, $term, @modifiers) = @_;
     if ($term =~ /[^\\][\*\?]/) { # TODO only works for single terms, mapping
         return { wildcard => { $qualifier => { value => $term } } };
     }

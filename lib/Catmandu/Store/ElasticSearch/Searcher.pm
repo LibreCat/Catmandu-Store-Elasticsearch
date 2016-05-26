@@ -42,7 +42,7 @@ sub generator {
         if ($total) {
             $total--;
         }
-        $store->unescape_reserved_keys($data->{_source});
+        $data->{_source};
     };
 }
 
