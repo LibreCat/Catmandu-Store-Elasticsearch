@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+
+0.05  2016-05-26 11:11:57 CEST
   - Elasticsearch 2.0 compatibility (if you use a custom key_prefix or id_key)
   - add the Catmandu::Droppable role to the store and bag
 
