@@ -74,3 +74,19 @@ sub count {
 1;
 
 __END__
+
+=pod
+
+=head1 NAME
+
+Catmandu::Store::ElasticSearch::Bag - Searcher implementation for Elasticsearch
+
+=head1 DESCRIPTION
+
+This class isn't normally used directly. Instances are constructed using the store's C<searcher> method.
+
+=head1 SEE ALSO
+
+L<Catmandu::Iterable>
+
+=cut

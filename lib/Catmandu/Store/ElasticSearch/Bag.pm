@@ -260,6 +260,14 @@ __END__
 
 =pod
 
+=head1 NAME
+
+Catmandu::Store::ElasticSearch::Bag - Catmandu::Bag implementation for Elasticsearch
+
+=head1 DESCRIPTION
+
+This class isn't normally used directly. Instances are constructed using the store's C<bag> method.
+
 =head1 SEE ALSO
 
 L<Catmandu::Bag>, L<Catmandu::Searchable>
