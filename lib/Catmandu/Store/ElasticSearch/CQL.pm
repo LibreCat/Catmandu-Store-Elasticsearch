@@ -301,7 +301,7 @@ sub _term_node {
 sub _text_node {
     my ($self, $qualifier, $term, @modifiers) = @_;
     if ($term =~ /[^\\][\*\?]/) { # TODO only works for single terms, mapping
-        return { wildcard => { $qualifier => { value => $term } } };
+        return { query_string => { query => "$qualifier:$term" } };
     }
     for my $m (@modifiers) {
         if ($m->[1] eq 'fuzzy') { # TODO only works for single terms, mapping fuzzy_factor
@@ -316,65 +316,3 @@ sub _text_node {
 
 1;
 
-__END__
-
-=pod
-
-=head1 NAME
-
-Catmandu::Store::ElasticSearch::CQL - Converts a CQL query string to a Elasticsearch query hashref
-
-=head1 SYNOPSIS
-
-    $es_query = Catmandu::Store::ElasticSearch::CQL
-        ->new(mapping => $cql_mapping)
-        ->parse($cql_query_string);
-
-=head1 DESCRIPTION
-
-This package currently parses most of CQL 1.1:
-
-    and
-    or
-    not
-    prox
-    prox/distance<$n
-    srw.allRecords
-    srw.serverChoice
-    srw.anywhere
-    cql.allRecords
-    cql.serverChoice
-    cql.anywhere
-    =
-    scr
-    =/fuzzy
-    scr/fuzzy
-    <
-    >
-    <=
-    >=
-    <>
-    exact
-    all
-    any
-    within
-
-=head1 METHODS
-
-=head2 parse
-
-Parses the given CQL query string with L<CQL::Parser> and converts it to a Elasticsearch query hashref.
-
-=head2 parse_node
-
-Converts the given L<CQL::Node> to a Elasticsearch query hashref.
-
-=head1 TODO
-
-support cql 1.2, more modifiers (esp. all of masked), sortBy, encloses
-
-=head1 SEE ALSO
-
-L<CQL::Parser>.
-
-=cut
