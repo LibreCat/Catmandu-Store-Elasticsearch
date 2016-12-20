@@ -87,19 +87,42 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
 
 =head1 METHODS
 
-=head2 new(index_name => $name)
-
-=head2 new(index_name => $name , bags => { data => { cql_mapping => \%mapping } })
-
-=head2 new(index_name => $name , index_mapping => $mapping)
+=head2 new(index_name => $name, ...)
 
 Create a new Catmandu::Store::ElasticSearch store connected to index $name.
+Optional extra ElasticSearch connection parameters will be passed on to the
+backend database.
 
-The store supports CQL searches when a cql_mapping is provided. This hash
+=head2 new(index_name => $name , index_mapping => $index_mappings, ...)
+
+The index_mapping contains a Elasticsearch schema mappings for each
+bag defined in the index. E.g.
+
+    $index_mappings => {
+        data => {
+            properties => {
+                _id => {type: string, include_in_all: true, index: not_analyzed}
+                title => { type => 'string' }
+            }
+        }
+    }
+
+In the example above the default 'data' bag of the ElasticSearch contains
+an '_id' field of type 'string' which is stored automatically also in the
+'_all' search field. The '_id' is not analyzed. The bag also contains a 'title'
+field of type string.
+
+See L<https://www.elastic.co/guide/en/elasticsearch/reference/2.2/mapping.html>
+for more information on mappings.
+
+=head2 new(index_name => $name , ... , bags => { data => { cql_mapping => \%cql_mapping } })
+
+Supports CQL searches with a cql_mapping is provided for each bag. This hash
 contains a translation of CQL fields into Elasticsearch searchable fields.
 
  # Example mapping
  $cql_mapping = {
+    indexes => {
       title => {
         op => {
           'any'   => 1 ,
@@ -108,24 +131,28 @@ contains a translation of CQL fields into Elasticsearch searchable fields.
           '<>'    => 1 ,
           'exact' => {field => [qw(mytitle.exact myalttitle.exact)]}
         } ,
-        sort  => 1,
         field => 'mytitle',
+        sort  => 1,
         cb    => ['Biblio::Search', 'normalize_title']
       }
+    }
  }
 
-The CQL mapping above will support for the 'title' field the CQL operators: any, all, =, <> and exact.
+The CQL mapping above will support for the 'title' field the CQL operators:
+any, all, =, <> and exact.
 
-For all the operators the 'title' field will be mapping into the Elasticsearch field 'mytitle', except
-for the 'exact' operator. In case of 'exact' we will search both the 'mytitle.exact' and 'myalttitle.exact'
-fields.
+The 'title' field will be mapping into the Elasticsearch field 'mytitle', except
+for the 'exact' operator. In case of 'exact' we will search both the
+'mytitle.exact' and 'myalttitle.exact' fields.
 
-The CQL mapping allows for sorting on the 'title' field. If, for instance, we would like to use a special
-Elasticsearch field for sorting we could have written "sort => { field => 'mytitle.sort' }".
+The CQL mapping allows for sorting on the 'title' field. If, for instance, we
+would like to use a special ElasticSearch field for sorting we could
+have written "sort => { field => 'mytitle.sort' }".
 
-The CQL has an optional callback field 'cb' which contains a reference to subroutines to rewrite or
-augment the search query. In this case, in the Biblio::Search package there is a normalize_title
-subroutine which returns a string or an ARRAY of string with augmented title(s). E.g.
+The optional callback field 'cb'  contains a reference to subroutines to rewrite or
+augment a search query. In this case, the Biblio::Search package contains a
+normalize_title subroutine which returns a string or an ARRAY of string
+with augmented title(s). E.g.
 
     package Biblio::Search;
 
@@ -137,18 +164,6 @@ subroutine which returns a string or an ARRAY of string with augmented title(s).
 
     1;
 
-Optionally, index_mappings contain Elasticsearch schema mappings. E.g.
-
-    # The 'data' index can ony contain one field 'title' of type 'string'
-    index_mappings => {
-        data => {
-            dynamic => 'strict',
-            properties => {
-                title => { type => 'string' }
-            }
-        }
-    }
-
 =head2 drop
 
 Deletes the Elasticsearch index backing this store. Calling functions after
@@ -158,7 +173,7 @@ this may fail until this class is reinstantiated, creating a new index.
 
 This store expects version 1.0 or higher of the Elasticsearch server.
 
-Note that Elasticsearch >= 2.0 doesn't like keys that start with an underscore such as
+Note that Elasticsearch >= 2.0 doesn't allow keys that start with an underscore such as
 C<_id>. You can use the C<key_prefix> option at store level or C<id_prefix> at
 bag level to handle this.
 
@@ -171,7 +186,7 @@ bag level to handle this.
           key_prefix: my_
 
 If you want to use the C<delete_by_query> method with Elasticsearch >= 2.0 you
-will have to L<install the delete by query plugin|https://www.elastic.co/guide/en/elasticsearch/plugins/current/plugins-delete-by-query.html>.
+need have to L<install the delete by query plugin|https://www.elastic.co/guide/en/elasticsearch/plugins/current/plugins-delete-by-query.html>.
 
 =head1 MIGRATING A STORE FROM ELASTICSEARCH 1.0 TO 2.0 OR HIGHER
 
