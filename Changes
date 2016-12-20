@@ -1,6 +1,7 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+  - fuzzy CQL queries are now analyzed
 
 0.0501  2016-08-23 13:33:19 CEST
   - minimal pod for all packages
