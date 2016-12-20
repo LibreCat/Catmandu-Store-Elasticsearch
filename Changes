@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+
+0.0502  2016-12-20 11:32:10 CET
   - fuzzy CQL queries are now analyzed
 
 0.0501  2016-08-23 13:33:19 CEST
