@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+
+0.0504  2017-01-03 13:35:26 CET
   - support escaping of special CQL characters
 
 0.0503  2016-12-20 11:38:16 CET
