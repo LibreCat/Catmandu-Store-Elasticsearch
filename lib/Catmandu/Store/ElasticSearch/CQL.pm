@@ -304,7 +304,7 @@ sub _text_node {
         return { query_string => { query => "$qualifier:$term" } };
     }
     # Unescape wildcards (when needed)...
-    $term =~ s{[\\]([\*\?])}{$1}g;
+    $term =~ s{[\\]([\^\*\?])}{$1}g;
     for my $m (@modifiers) {
         if ($m->[1] eq 'fuzzy') { # TODO only works for single terms, mapping fuzzy_factor
             return { fuzzy => { $qualifier => { value => $term, max_expansions => 10 } } };
