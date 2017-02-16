@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+
+0.0505  2017-02-16 15:55:34 CET
   - correctly quote query string terms
 
 0.0504  2017-01-03 13:35:26 CET
