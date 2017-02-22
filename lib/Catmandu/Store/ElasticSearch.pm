@@ -121,8 +121,6 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
 
 =head2 new(index_name => $name , ... , bags => { data => { cql_mapping => \%map } })
 
-=head2 new(index_name => $name , ... , ... , cb => sub {} );
-
 Create a new Catmandu::Store::ElasticSearch store connected to index $name.
 Optional extra ElasticSearch connection parameters will be passed on to the
 backend database.
