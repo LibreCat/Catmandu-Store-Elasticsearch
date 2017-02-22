@@ -55,9 +55,28 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
 
 =head1 SYNOPSIS
 
-    use Catmandu::Store::ElasticSearch;
+    # From the command line
 
-    my $store = Catmandu::Store::ElasticSearch->new(index_name => 'catmandu');
+    # Import data into ElasticSearch
+    $ catmandu import JSON to ElasticSearch --index-name 'catmandu' < data.json
+
+    # Export data from ElasticSearch
+    $ catmandu export ElasticSearch --index-name 'catmandu' to JSON > data.json
+
+    # Export only one record
+    $ catmandu export ElasticSearch --index-name 'catmandu' --id 1234
+
+    # Export using an ElasticSearch query
+    $ catmandu export ElasticSearch --index-name 'catmandu' --query "name:Recruitment OR name:college"
+
+    # Export using a CQL query (needs a CQL mapping)
+    $ catmandu export ElasticSearch --index-name 'catmandu' --q "name any college"
+
+    # From Perl
+
+    use Catmandu;
+
+    my $store = Catmandu->store('ElasticSearch', index_name => 'catmandu');
 
     my $obj1 = $store->bag->add({ name => 'Patrick' });
 
@@ -69,8 +88,6 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
     # Commit all changes
     $store->bag->commit;
 
-    my $obj3 = $store->bag->get('test123');
-
     $store->bag->delete('test123');
 
     $store->bag->delete_all;
@@ -79,30 +96,63 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
     $store->bag->each(sub { ... });
     $store->bag->take(10)->each(sub { ... });
 
-    # Some stores can be searched
-    my $hits = $store->bag->search(query => 'name:Patrick');
+    # Query the store using a simple ElasticSearch query
+    my $hits = $store->bag->search(query => '(content:this OR name:this) AND (content:that OR name:that)');
+
+    # Native queries are also supported by providing a hash of terms
+    # See the ElasticSearch manual for more examples
+    my $hits = $store->bag->search(
+        query => {
+            # All name.exact fields that start with 'test'
+            prefix => {
+                'name.exact' => 'test'
+            }
+        } ,
+        limit => 1000);
 
     # Catmandu::Store::ElasticSearch supports CQL...
     my $hits = $store->bag->search(cql_query => 'name any "Patrick"');
 
 =head1 METHODS
 
-=head2 new(index_name => $name, ...)
+=head2 new(index_name => $name, [...])
+
+=head2 new(index_name => $name , index_mapping => \%map, [...])
+
+=head2 new(index_name => $name , ... , bags => { data => { cql_mapping => \%map } })
+
+=head2 new(index_name => $name , ... , ... , cb => sub {} );
 
 Create a new Catmandu::Store::ElasticSearch store connected to index $name.
 Optional extra ElasticSearch connection parameters will be passed on to the
 backend database.
 
-=head2 new(index_name => $name , index_mapping => $index_mappings, ...)
+Optionally provide an C<index_mapping> which contains a ElasticSearch schema
+for each field in the index (See below).
+
+Optionally provide for each bag a C<cql_mapping> to map fields to CQL indexes.
+
+=head2 drop
+
+Deletes the Elasticsearch index backing this store. Calling functions after
+this may fail until this class is reinstantiated, creating a new index.
+
+=head1 INDEX MAP
 
 The index_mapping contains a Elasticsearch schema mappings for each
 bag defined in the index. E.g.
 
-    $index_mappings => {
+    {
         data => {
             properties => {
-                _id => {type: string, include_in_all: true, index: not_analyzed}
-                title => { type => 'string' }
+                _id => {
+                    type           => 'string',
+                    include_in_all => 'true',
+                    index          => not_analyzed
+                } ,
+                title => {
+                    type           => 'string'
+                }
             }
         }
     }
@@ -115,13 +165,39 @@ field of type string.
 See L<https://www.elastic.co/guide/en/elasticsearch/reference/2.2/mapping.html>
 for more information on mappings.
 
-=head2 new(index_name => $name , ... , bags => { data => { cql_mapping => \%cql_mapping } })
+These mappings can be passed inside a Perl program, or be written into a
+Catmandu 'catmandu.yml' configuration file. E.g.
 
-Supports CQL searches with a cql_mapping is provided for each bag. This hash
-contains a translation of CQL fields into Elasticsearch searchable fields.
+   # catmandu.yml
+   store:
+       search:
+          package: ElasticSearch
+          options:
+            index_name: catmandu
+            index_mappings
+              data:
+                properties:
+                    _id:
+                        type: string
+                        include_in_all: true
+                        index: not_analyzed
+                    title:
+                        type: string
+
+Via the command line these configuration parameters can be read in by using the
+name of the store, C<search> in this case:
+
+   $ catmandu import JSON to search < data.json
+   $ catmandu export search to JSON > data.json
+
+=head1 CQL MAP
+
+Catmandu::Store::ElasticSearch supports CQL searches when a cql_mapping is provided
+for each bag. This hash contains a translation of CQL fields into Elasticsearch
+searchable fields.
 
  # Example mapping
- $cql_mapping = {
+  {
     indexes => {
       title => {
         op => {
@@ -149,9 +225,9 @@ The CQL mapping allows for sorting on the 'title' field. If, for instance, we
 would like to use a special ElasticSearch field for sorting we could
 have written "sort => { field => 'mytitle.sort' }".
 
-The optional callback field 'cb'  contains a reference to subroutines to rewrite or
+The callback field C<cb> contains a reference to subroutines to rewrite or
 augment a search query. In this case, the Biblio::Search package contains a
-normalize_title subroutine which returns a string or an ARRAY of string
+normalize_title subroutine which returns a string or an ARRAY of strings
 with augmented title(s). E.g.
 
     package Biblio::Search;
@@ -164,10 +240,44 @@ with augmented title(s). E.g.
 
     1;
 
-=head2 drop
+Also this configuration can be added to a catmandu.yml configuration file like:
 
-Deletes the Elasticsearch index backing this store. Calling functions after
-this may fail until this class is reinstantiated, creating a new index.
+    # catmandu.yml
+    store:
+        search:
+           package: ElasticSearch
+           options:
+             index_name: catmandu
+             index_mappings
+               data:
+                 properties:
+                     _id:
+                         type: string
+                         include_in_all: true
+                         index: not_analyzed
+                     title:
+                         type: string
+             bags:
+               data:
+                  cql_mapping:
+                    indexes:
+                        title:
+                            op:
+                                'any': true
+                                'all': true
+                                '=':   true
+                                '<>':  true
+                                'exact':
+                                    field: [ 'mytitle.exact' , 'myalttitle.exact' ]
+                            field: mytitle
+                            sort: true
+                            cb: [ 'Biblio::Search' , 'normalize_title' ]
+                    }
+
+Via the command line these configuration parameters can be read in by using the
+name of the store, C<search> in this case:
+
+   $ catmandu export search -q 'title any blablabla' to JSON > data.json
 
 =head1 COMPATIBILITY
 
