@@ -2,7 +2,7 @@ package Catmandu::Store::ElasticSearch::Bag;
 
 use Catmandu::Sane;
 
-our $VERSION = '0.0505';
+our $VERSION = '0.0506';
 
 use Moo;
 use Catmandu::Hits;
