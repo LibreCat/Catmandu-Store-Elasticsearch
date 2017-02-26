@@ -146,7 +146,7 @@ bag defined in the index. E.g.
                 _id => {
                     type           => 'string',
                     include_in_all => 'true',
-                    index          => not_analyzed
+                    index          => 'not_analyzed'
                 } ,
                 title => {
                     type           => 'string'
