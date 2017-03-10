@@ -230,6 +230,17 @@ name of the store, `search` in this case:
 
 This store expects version 1.0 or higher of the Elasticsearch server.
 
+To talk to older versions of Elasticsearch the approriate client should be installed.
+
+    # Elasticsearch 2.x
+    cpanm Search::Elasticsearch::Client::2_0::Direct
+    # Elasticsearch 1.x
+    cpanm Search::Elasticsearch::Client::1_0::Direct
+
+And the client version should be specified in the options:
+
+    Catmandu::Store::ElasticSearch->new(index_name => 'myindex', client => '1_0::Direct')
+
 Note that Elasticsearch >= 2.0 doesn't allow keys that start with an underscore such as
 `_id`. You can use the `key_prefix` option at store level or `id_prefix` at
 bag level to handle this.
