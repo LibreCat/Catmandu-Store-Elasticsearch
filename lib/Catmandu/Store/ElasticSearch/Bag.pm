@@ -40,16 +40,24 @@ sub _build_bulk {
 sub generator {
     my ($self) = @_;
     sub {
-        state $scroll = $self->store->es->scroll_helper(
-            index       => $self->store->index_name,
-            type        => $self->name,
-            search_type => 'scan',
-            size        => $self->buffer_size, # TODO divide by number of shards
-            body        => {
-                query => {match_all => {}},
-            },
-        );
-        my $data = $scroll->next // return;
+        state $scroll = do {
+            my %args = (
+                index       => $self->store->index_name,
+                type        => $self->name,
+                size        => $self->buffer_size, # TODO divide by number of shards
+                body        => {
+                    query => {match_all => {}},
+                },
+            );
+            if ($self->store->is_es_1_or_2) {
+                $args{search_type} = 'scan';
+            }
+            $self->store->es->scroll_helper(%args);
+        };
+        my $data = $scroll->next // do {
+            $scroll->finish;
+            return;
+        };
         $data->{_source};
     };
 }

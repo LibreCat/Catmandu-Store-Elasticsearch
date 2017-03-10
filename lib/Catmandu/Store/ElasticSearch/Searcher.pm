@@ -28,17 +28,23 @@ sub generator {
         state $scroll = do {
             my $body = {query => $self->query};
             $body->{sort} = $self->sort if $self->sort;
-            $store->es->scroll_helper(
+            my %args = (
                 index       => $store->index_name,
                 type        => $self->bag->name,
-                search_type => $self->sort ? 'query_then_fetch' : 'scan',
                 from        => $self->start,
                 size        => $self->bag->buffer_size, # TODO divide by number of shards
                 body        => $body,
             );
+            if (!$self->sort && $store->is_es_1_or_2) {
+                $args{search_type} = 'scan';
+            }
+            $store->es->scroll_helper(%args);
         };
 
-        my $data = $scroll->next // return;
+        my $data = $scroll->next // do {
+            $scroll->finish;
+            return;
+        };
         if ($total) {
             $total--;
         }

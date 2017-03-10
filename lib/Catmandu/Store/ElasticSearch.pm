@@ -6,6 +6,7 @@ our $VERSION = '0.0506';
 
 use Moo;
 use Search::Elasticsearch;
+use Catmandu::Util qw(is_instance);
 use Catmandu::Store::ElasticSearch::Bag;
 use namespace::clean;
 
@@ -17,6 +18,8 @@ has index_settings => (is => 'ro', lazy => 1, default => sub { +{} });
 has index_mappings => (is => 'ro', lazy => 1, default => sub { +{} });
 has _es_args => (is => 'rw', lazy => 1, default => sub { +{} });
 has es => (is => 'lazy');
+# used internally
+has is_es_1_or_2 => (is => 'lazy');
 
 sub _build_es {
     my ($self) = @_;
@@ -41,6 +44,12 @@ sub BUILD {
 sub drop {
     my ($self) = @_;
     $self->es->indices->delete(index => $self->index_name);
+}
+
+sub _build_is_es_1_or_2 {
+    my ($self) = @_;
+    is_instance($self->es, 'Search::Elasticsearch::Client::1_0::Direct') ||
+        is_instance($self->es, 'Search::Elasticsearch::Client::2_0::Direct');
 }
 
 1;
@@ -280,6 +289,17 @@ name of the store, C<search> in this case:
 =head1 COMPATIBILITY
 
 This store expects version 1.0 or higher of the Elasticsearch server.
+
+To talk to older versions of Elasticsearch the approriate client should be installed.
+
+    # Elasticsearch 2.x
+    cpanm Search::Elasticsearch::Client::2_0::Direct
+    # Elasticsearch 1.x
+    cpanm Search::Elasticsearch::Client::1_0::Direct
+
+And the client version should be specified in the options:
+
+    Catmandu::Store::ElasticSearch->new(index_name => 'myindex', client => '1_0::Direct')
 
 Note that Elasticsearch >= 2.0 doesn't allow keys that start with an underscore such as
 C<_id>. You can use the C<key_prefix> option at store level or C<id_prefix> at
