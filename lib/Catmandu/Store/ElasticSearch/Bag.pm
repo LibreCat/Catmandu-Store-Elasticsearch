@@ -6,12 +6,13 @@ our $VERSION = '0.0507';
 
 use Moo;
 use Catmandu::Hits;
+use Cpanel::JSON::XS qw(decode_json);
 use Catmandu::Store::ElasticSearch::Searcher;
 use Catmandu::Store::ElasticSearch::CQL;
 
 with 'Catmandu::Bag';
 with 'Catmandu::Droppable';
-with 'Catmandu::Searchable';
+with 'Catmandu::CQLSearchable';
 
 has buffer_size => (is => 'ro', lazy => 1, builder => 'default_buffer_size');
 has _bulk       => (is => 'ro', lazy => 1, builder => '_build_bulk');
@@ -254,6 +255,14 @@ sub normalize_query {
     } else {
         {match_all => {}};
     }
+}
+
+# assume a sort string is JSON encoded
+sub normalize_sort {
+    my ($self, $sort) = @_;
+    return $sort if ref $sort;
+    return if !$sort;
+    decode_json($sort);
 }
 
 sub drop {
