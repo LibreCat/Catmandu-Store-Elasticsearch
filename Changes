@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+
+0.0508  2017-03-23 14:22:20 CET
   - use Catmandu's new CQLSearchable role
   - support JSON encoded sort param
 

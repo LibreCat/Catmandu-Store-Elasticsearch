@@ -18,13 +18,14 @@ my %module_build_args = (
     "Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>"
   ],
   "dist_name" => "Catmandu-Store-Elasticsearch",
-  "dist_version" => "0.0507",
+  "dist_version" => "0.0508",
   "license" => "perl",
   "module_name" => "Catmandu::Store::Elasticsearch",
   "recursive_test_files" => 1,
   "requires" => {
     "CQL::Parser" => "1.12",
-    "Catmandu" => "1.01",
+    "Catmandu" => "1.04",
+    "Cpanel::JSON::XS" => "3.0213",
     "Moo" => "1.0",
     "Search::Elasticsearch" => "1.14",
     "namespace::clean" => "0.24",
