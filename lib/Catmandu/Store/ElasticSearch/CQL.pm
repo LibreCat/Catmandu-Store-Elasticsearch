@@ -300,8 +300,11 @@ sub _term_node {
 
 sub _text_node {
     my ($self, $qualifier, $term, @modifiers) = @_;
-    if ($term =~ /[^\\][\*\?]/) { # TODO only works for single terms, mapping
-        return { query_string => { query => qq|$qualifier:"$term"| } };
+    if ($term =~ /[^\\][\*\?]/) {
+        # escape spaces
+        $term =~ s/(?<!\\) /\\ /g;
+        $term =~ s/^ /\\ /;
+        return { query_string => { query => qq|$qualifier:$term| } };
     }
     # Unescape wildcards (when needed)...
     $term =~ s{[\\]([\^\*\?])}{$1}g;
