@@ -144,6 +144,32 @@ Optionally provide for each bag a C<cql_mapping> to map fields to CQL indexes.
 Deletes the Elasticsearch index backing this store. Calling functions after
 this may fail until this class is reinstantiated, creating a new index.
 
+=head1 INHERITED METHODS
+
+This Catmandu::Store implements:
+
+=over 3
+
+=item L<Catmandu::Store>
+
+=item L<Catmandu::Droppable>
+
+=back
+
+Each Catmandu::Bag in this Catmandu::Store implements:
+
+=over 3
+
+=item L<Catmandu::Bag>
+
+=item L<Catmandu::Droppable>
+
+=item L<Catmandu::Searchable>
+
+=item L<Catmandu::CQLSearchable>
+
+=back
+
 =head1 INDEX MAP
 
 The index_mapping contains a Elasticsearch schema mappings for each
