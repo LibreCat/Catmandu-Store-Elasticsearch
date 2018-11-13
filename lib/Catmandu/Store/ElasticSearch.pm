@@ -38,6 +38,7 @@ sub _build_es {
 
 sub BUILD {
     my ($self, $args) = @_;
+    # TODO filter out own args
     $self->_es_args($args);
 }
 
@@ -316,7 +317,7 @@ name of the store, C<search> in this case:
 
 This store expects version 1.0 or higher of the Elasticsearch server.
 
-To talk to older versions of Elasticsearch the approriate client should be installed.
+To talk to older versions of Elasticsearch the appropriate client should be installed.
 
     # Elasticsearch 2.x
     cpanm Search::Elasticsearch::Client::2_0::Direct

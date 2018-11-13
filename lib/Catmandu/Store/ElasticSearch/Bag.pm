@@ -110,7 +110,7 @@ sub delete_all {
                 query => {match_all => {}},
             },
         );
-    } else { # TODO document plugin needed for es >= 2.0
+    } else { # TODO document plugin needed for es 2.x
         $es->transport->perform_request(
             method => 'DELETE',
             path => '/'.$self->store->index_name.'/'.$self->name.'/_query',
@@ -132,7 +132,7 @@ sub delete_by_query {
                 query => $args{query},
             },
         );
-    } else { # TODO document plugin needed for es >= 2.0
+    } else { # TODO document plugin needed for es 2.x
         $es->transport->perform_request(
             method => 'DELETE',
             path => '/'.$self->store->index_name.'/'.$self->name.'/_query',
