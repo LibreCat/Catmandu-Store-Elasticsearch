@@ -38,6 +38,7 @@ sub _build_es {
 
 sub BUILD {
     my ($self, $args) = @_;
+    # TODO filter out own args
     $self->_es_args($args);
 }
 
