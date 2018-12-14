@@ -329,7 +329,7 @@ And the client version should be specified in the options:
     Catmandu::Store::ElasticSearch->new(index_name => 'myindex', client => '1_0::Direct')
 
 Note that Elasticsearch >= 2.0 doesn't allow keys that start with an underscore such as
-C<_id>. You can use the C<key_prefix> option at store level or C<id_prefix> at
+C<_id>. You can use the C<key_prefix> option at store level or C<id_key> at
 bag level to handle this.
 
     # in your catmandu.yml
