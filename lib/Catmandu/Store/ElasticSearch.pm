@@ -13,11 +13,12 @@ use namespace::clean;
 with 'Catmandu::Store';
 with 'Catmandu::Droppable';
 
-has index_name => (is => 'ro', required => 1);
-has index_settings => (is => 'ro', lazy => 1, default => sub { +{} });
-has index_mappings => (is => 'ro', lazy => 1, default => sub { +{} });
-has _es_args => (is => 'rw', lazy => 1, default => sub { +{} });
+has index_name     => (is => 'ro', required => 1);
+has index_settings => (is => 'ro', lazy     => 1, default => sub {+{}});
+has index_mappings => (is => 'ro', lazy     => 1, default => sub {+{}});
+has _es_args       => (is => 'rw', lazy     => 1, default => sub {+{}});
 has es => (is => 'lazy');
+
 # used internally
 has is_es_1_or_2 => (is => 'lazy');
 
@@ -38,6 +39,7 @@ sub _build_es {
 
 sub BUILD {
     my ($self, $args) = @_;
+
     # TODO filter out own args
     $self->_es_args($args);
 }
@@ -49,8 +51,9 @@ sub drop {
 
 sub _build_is_es_1_or_2 {
     my ($self) = @_;
-    is_instance($self->es, 'Search::Elasticsearch::Client::1_0::Direct') ||
-        is_instance($self->es, 'Search::Elasticsearch::Client::2_0::Direct');
+    is_instance($self->es, 'Search::Elasticsearch::Client::1_0::Direct')
+        || is_instance($self->es,
+        'Search::Elasticsearch::Client::2_0::Direct');
 }
 
 1;

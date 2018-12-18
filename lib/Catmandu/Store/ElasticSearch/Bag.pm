@@ -18,9 +18,9 @@ with 'Catmandu::CQLSearchable';
 has buffer_size => (is => 'ro', lazy => 1, builder => 'default_buffer_size');
 has _bulk       => (is => 'ro', lazy => 1, builder => '_build_bulk');
 has cql_mapping => (is => 'ro');
-has on_error    => (is => 'ro', default => sub { 'log' });
+has on_error => (is => 'ro', default => sub {'log'});
 
-sub default_buffer_size { 100 }
+sub default_buffer_size {100}
 
 sub _coerce_on_error {
     my ($self, $cb) = @_;
@@ -41,16 +41,17 @@ sub _coerce_on_error {
         };
     }
     if (is_string($cb) && $cb eq 'ignore') {
-        return sub {};
+        return sub { };
     }
 
-    Catmandu::BadArg->throw("on_error should be code ref, 'throw', 'log', or 'ignore'");
+    Catmandu::BadArg->throw(
+        "on_error should be code ref, 'throw', 'log', or 'ignore'");
 }
 
 sub _build_bulk {
-    my ($self) = @_;
+    my ($self)   = @_;
     my $on_error = $self->_coerce_on_error($self->on_error);
-    my %args = (
+    my %args     = (
         index     => $self->store->index_name,
         type      => $self->name,
         max_count => $self->buffer_size,
@@ -70,12 +71,10 @@ sub generator {
     sub {
         state $scroll = do {
             my %args = (
-                index       => $self->store->index_name,
-                type        => $self->name,
-                size        => $self->buffer_size, # TODO divide by number of shards
-                body        => {
-                    query => {match_all => {}},
-                },
+                index => $self->store->index_name,
+                type  => $self->name,
+                size => $self->buffer_size,  # TODO divide by number of shards
+                body => {query => {match_all => {}},},
             );
             if ($self->store->is_es_1_or_2) {
                 $args{search_type} = 'scan';
@@ -106,19 +105,15 @@ sub get {
             type  => $self->name,
             id    => $id,
         );
-   } catch_case [
-       'Search::Elasticsearch::Error::Missing' => sub { undef }
-   ];
+    }
+    catch_case ['Search::Elasticsearch::Error::Missing' => sub {undef}];
 }
 
 sub add {
     my ($self, $data) = @_;
     $data = {%$data};
     my $id = $data->{$self->id_key};
-    $self->_bulk->index({
-        id     => $id,
-        source => $data,
-    });
+    $self->_bulk->index({id => $id, source => $data,});
 }
 
 sub delete {
@@ -132,18 +127,18 @@ sub delete_all {
     if ($es->can('delete_by_query')) {
         $es->delete_by_query(
             index => $self->store->index_name,
-            type => $self->name,
-            body => {
-                query => {match_all => {}},
-            },
+            type  => $self->name,
+            body  => {query => {match_all => {}},},
         );
-    } else { # TODO document plugin needed for es 2.x
+    }
+    else {    # TODO document plugin needed for es 2.x
         $es->transport->perform_request(
             method => 'DELETE',
-            path => '/'.$self->store->index_name.'/'.$self->name.'/_query',
-            body => {
-                query => {match_all => {}},
-            }
+            path   => '/'
+                . $self->store->index_name . '/'
+                . $self->name
+                . '/_query',
+            body => {query => {match_all => {}},}
         );
     }
 }
@@ -154,18 +149,18 @@ sub delete_by_query {
     if ($es->can('delete_by_query')) {
         $es->delete_by_query(
             index => $self->store->index_name,
-            type => $self->name,
-            body => {
-                query => $args{query},
-            },
+            type  => $self->name,
+            body  => {query => $args{query},},
         );
-    } else { # TODO document plugin needed for es 2.x
+    }
+    else {    # TODO document plugin needed for es 2.x
         $es->transport->perform_request(
             method => 'DELETE',
-            path => '/'.$self->store->index_name.'/'.$self->name.'/_query',
-            body => {
-                query => $args{query},
-            }
+            path   => '/'
+                . $self->store->index_name . '/'
+                . $self->name
+                . '/_query',
+            body => {query => $args{query},}
         );
     }
 }
@@ -175,7 +170,7 @@ sub commit {
     $self->_bulk->flush;
     $self->store->es->transport->perform_request(
         method => 'POST',
-        path => '/'.$self->store->index_name.'/_refresh',
+        path   => '/' . $self->store->index_name . '/_refresh',
     );
 }
 
@@ -195,27 +190,22 @@ sub search {
     my $res = $self->store->es->search(
         index => $self->store->index_name,
         type  => $self->name,
-        body  => {
-            %args,
-            from => $start,
-            size => $limit,
-        },
+        body  => {%args, from => $start, size => $limit,},
     );
 
     my $docs = $res->{hits}{hits};
 
-    my $hits = {
-        start => $start,
-        limit => $limit,
-        total => $res->{hits}{total},
-    };
+    my $hits
+        = {start => $start, limit => $limit, total => $res->{hits}{total},};
 
     if ($bag) {
-        $hits->{hits} = [ map { $bag->get($_->{$id_key}) } @$docs ];
-    } elsif ($args{fields}) {
-        $hits->{hits} = [ map { $_->{fields} || +{} } @$docs ];
-    } else {
-        $hits->{hits} = [ map { $_->{_source} } @$docs ];
+        $hits->{hits} = [map {$bag->get($_->{$id_key})} @$docs];
+    }
+    elsif ($args{fields}) {
+        $hits->{hits} = [map {$_->{fields} || +{}} @$docs];
+    }
+    else {
+        $hits->{hits} = [map {$_->{_source}} @$docs];
     }
 
     $hits = Catmandu::Hits->new($hits);
@@ -242,7 +232,10 @@ sub searcher {
 
 sub translate_sru_sortkeys {
     my ($self, $sortkeys) = @_;
-    [ grep { defined $_ } map { $self->_translate_sru_sortkey($_) } split /\s+/, $sortkeys ];
+    [
+        grep {defined $_} map {$self->_translate_sru_sortkey($_)} split /\s+/,
+        $sortkeys
+    ];
 }
 
 sub _translate_sru_sortkey {
@@ -251,35 +244,42 @@ sub _translate_sru_sortkey {
     $field || return;
     if (my $map = $self->cql_mapping) {
         $field = lc $field;
-        $field =~ s/(?<=[^_])_(?=[^_])//g if $map->{strip_separating_underscores};
+        $field =~ s/(?<=[^_])_(?=[^_])//g
+            if $map->{strip_separating_underscores};
         $map = $map->{indexes} || return;
         $map = $map->{$field}  || return;
         $map->{sort} || return;
         if (ref $map->{sort} && $map->{sort}{field}) {
             $field = $map->{sort}{field};
-        } elsif (ref $map->{field}) {
+        }
+        elsif (ref $map->{field}) {
             $field = $map->{field}->[0];
-        } elsif ($map->{field}) {
+        }
+        elsif ($map->{field}) {
             $field = $map->{field};
         }
     }
     $asc //= 1;
-    +{ $field => $asc ? 'asc' : 'desc' };
+    +{$field => $asc ? 'asc' : 'desc'};
 }
 
 sub translate_cql_query {
     my ($self, $query) = @_;
-    Catmandu::Store::ElasticSearch::CQL->new(mapping => $self->cql_mapping,
-        id_key => $self->id_key)->parse($query);
+    Catmandu::Store::ElasticSearch::CQL->new(
+        mapping => $self->cql_mapping,
+        id_key  => $self->id_key
+    )->parse($query);
 }
 
 sub normalize_query {
     my ($self, $query) = @_;
     if (ref $query) {
         $query;
-    } elsif ($query) {
+    }
+    elsif ($query) {
         {query_string => {query => $query}};
-    } else {
+    }
+    else {
         {match_all => {}};
     }
 }
