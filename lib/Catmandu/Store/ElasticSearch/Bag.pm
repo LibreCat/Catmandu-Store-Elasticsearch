@@ -6,9 +6,10 @@ our $VERSION = '0.0509';
 
 use Moo;
 use Catmandu::Hits;
-use Cpanel::JSON::XS qw(decode_json);
+use Cpanel::JSON::XS qw(encode_json decode_json);
 use Catmandu::Store::ElasticSearch::Searcher;
 use Catmandu::Store::ElasticSearch::CQL;
+use Catmandu::Util qw(is_code_ref is_string);
 
 with 'Catmandu::Bag';
 with 'Catmandu::Droppable';
@@ -17,22 +18,48 @@ with 'Catmandu::CQLSearchable';
 has buffer_size => (is => 'ro', lazy => 1, builder => 'default_buffer_size');
 has _bulk       => (is => 'ro', lazy => 1, builder => '_build_bulk');
 has cql_mapping => (is => 'ro');
-has on_error    => (is => 'ro', default => sub { sub {} });
+has on_error    => (is => 'ro', default => sub { 'log' });
 
 sub default_buffer_size { 100 }
 
+sub _coerce_on_error {
+    my ($self, $cb) = @_;
+
+    if (is_code_ref($cb)) {
+        return $cb;
+    }
+    if (is_string($cb) && $cb eq 'throw') {
+        return sub {
+            my ($action, $res, $i) = @_;
+            Catmandu::Error->throw(encode_json($res));
+        };
+    }
+    if (is_string($cb) && $cb eq 'log') {
+        return sub {
+            my ($action, $res, $i) = @_;
+            $self->log->error(encode_json($res));
+        };
+    }
+    if (is_string($cb) && $cb eq 'ignore') {
+        return sub {};
+    }
+
+    Catmandu::BadArg->throw("on_error should be code ref, 'throw', 'log', or 'ignore'");
+}
+
 sub _build_bulk {
     my ($self) = @_;
+    my $on_error = $self->_coerce_on_error($self->on_error);
     my %args = (
         index     => $self->store->index_name,
         type      => $self->name,
         max_count => $self->buffer_size,
-        on_error  => \&{$self->on_error},
+        on_error  => $on_error,
     );
     if ($self->log->is_debug) {
         $args{on_success} = sub {
-            my ($action, $res, $i) = @_; # TODO return doc instead of index
-            $self->log->debug($res);
+            my ($action, $res, $i) = @_;
+            $self->log->debug(encode_json($res));
         };
     }
     $self->store->es->bulk_helper(%args);

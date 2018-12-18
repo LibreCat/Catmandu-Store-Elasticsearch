@@ -367,14 +367,28 @@ need have to L<install the delete by query plugin|https://www.elastic.co/guide/e
 Error handling can be activated by specifying an error handling callback for index when creating
 a store. E.g. to create an error handler for the bag 'data' index use:
 
-    my $store = Catmandu::Store::ElasticSearch->new(
-                    index_name => 'catmandu'
-                    bags => { data => { on_error => \&error_handler } }
-                 });
-
-    sub error_handler {
+    my $error_handler = sub {
         my ($action, $response, $i) = @_;
-    }
+        do_something_with_error($response);
+    };
+
+    my $store = Catmandu::Store::ElasticSearch->new(
+        index_name => 'catmandu'
+        bags       => { data => { on_error => $error_handler } }
+    });
+
+Instead of a callback, the following shortcuts are also accepted for on_error:
+
+log: log the response
+
+throw: throw the response as an error
+
+ignore: do nothing
+
+    my $store = Catmandu::Store::ElasticSearch->new(
+        index_name => 'catmandu'
+        bags       => { data => { on_error => 'log' } }
+    });
 
 =head1 SEE ALSO
 

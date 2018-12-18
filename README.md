@@ -84,6 +84,20 @@ Optionally provide for each bag a `cql_mapping` to map fields to CQL indexes.
 Deletes the Elasticsearch index backing this store. Calling functions after
 this may fail until this class is reinstantiated, creating a new index.
 
+# INHERITED METHODS
+
+This Catmandu::Store implements:
+
+- [Catmandu::Store](https://metacpan.org/pod/Catmandu::Store)
+- [Catmandu::Droppable](https://metacpan.org/pod/Catmandu::Droppable)
+
+Each Catmandu::Bag in this Catmandu::Store implements:
+
+- [Catmandu::Bag](https://metacpan.org/pod/Catmandu::Bag)
+- [Catmandu::Droppable](https://metacpan.org/pod/Catmandu::Droppable)
+- [Catmandu::Searchable](https://metacpan.org/pod/Catmandu::Searchable)
+- [Catmandu::CQLSearchable](https://metacpan.org/pod/Catmandu::CQLSearchable)
+
 # INDEX MAP
 
 The index\_mapping contains a Elasticsearch schema mappings for each
@@ -230,7 +244,7 @@ name of the store, `search` in this case:
 
 This store expects version 1.0 or higher of the Elasticsearch server.
 
-To talk to older versions of Elasticsearch the approriate client should be installed.
+To talk to older versions of Elasticsearch the appropriate client should be installed.
 
     # Elasticsearch 2.x
     cpanm Search::Elasticsearch::Client::2_0::Direct
@@ -242,7 +256,7 @@ And the client version should be specified in the options:
     Catmandu::Store::ElasticSearch->new(index_name => 'myindex', client => '1_0::Direct')
 
 Note that Elasticsearch >= 2.0 doesn't allow keys that start with an underscore such as
-`_id`. You can use the `key_prefix` option at store level or `id_prefix` at
+`_id`. You can use the `key_prefix` option at store level or `id_key` at
 bag level to handle this.
 
     # in your catmandu.yml
@@ -280,14 +294,28 @@ need have to [install the delete by query plugin](https://www.elastic.co/guide/e
 Error handling can be activated by specifying an error handling callback for index when creating
 a store. E.g. to create an error handler for the bag 'data' index use:
 
-    my $store = Catmandu::Store::ElasticSearch->new(
-                    index_name => 'catmandu'
-                    bags => { data => { on_error => \&error_handler } }
-                 });
-
-    sub error_handler {
+    my $error_handler = sub {
         my ($action, $response, $i) = @_;
-    }
+        do_something_with_error($response);
+    };
+
+    my $store = Catmandu::Store::ElasticSearch->new(
+        index_name => 'catmandu'
+        bags       => { data => { on_error => $error_handler } }
+    });
+
+Instead of a callback, the following shortcuts are also accepted for on\_error:
+
+log: log the response
+
+throw: throw the response as an error
+
+ignore: do nothing
+
+    my $store = Catmandu::Store::ElasticSearch->new(
+        index_name => 'catmandu'
+        bags       => { data => { on_error => 'log' } }
+    });
 
 # SEE ALSO
 
