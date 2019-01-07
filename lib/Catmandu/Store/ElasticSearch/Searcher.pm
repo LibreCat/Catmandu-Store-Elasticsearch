@@ -19,6 +19,7 @@ has sort  => (is => 'ro');
 sub generator {
     my ($self) = @_;
     my $store = $self->bag->store;
+    my $id_key = $self->bag->id_key;
     sub {
         state $total = $self->total;
         if (defined $total) {
@@ -42,14 +43,16 @@ sub generator {
             $store->es->scroll_helper(%args);
         };
 
-        my $data = $scroll->next // do {
+        my $doc = $scroll->next // do {
             $scroll->finish;
             return;
         };
         if ($total) {
             $total--;
         }
-        $data->{_source};
+        my $data = $doc->{_source};
+        $data->{$id_key} = $doc->{_id};
+        $data;
     };
 }
 
