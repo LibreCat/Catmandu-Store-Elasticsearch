@@ -26,8 +26,8 @@ my %module_build_args = (
     "CQL::Parser" => "1.12",
     "Catmandu" => "1.04",
     "Cpanel::JSON::XS" => "3.0213",
-    "Moo" => "1.0",
-    "Search::Elasticsearch" => "1.14",
+    "Moo" => "1.004006",
+    "Search::Elasticsearch" => "6.00",
     "namespace::clean" => "0.24",
     "perl" => "v5.10.1"
   },
