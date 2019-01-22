@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+  - the bag gets a new type parameter for setting the index type that defaults
+    to the bag's name
 
 0.0511  2019-01-07 12:14:11 CET
   - setting id_key or key_prefix is no longer necessary for Elasticsearch >= 2.0

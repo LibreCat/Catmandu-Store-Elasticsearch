@@ -145,6 +145,9 @@ backend database.
 Optionally provide an C<index_mapping> which contains a ElasticSearch schema
 for each field in the index (See below).
 
+Optionally provide for each bag a C<type> to indicate which mapping to use.
+This defaults to the bag's name.
+
 Optionally provide for each bag a C<cql_mapping> to map fields to CQL indexes.
 
 =head2 drop
@@ -291,12 +294,13 @@ Also this configuration can be added to a catmandu.yml configuration file like:
              client: 6_0::Direct
              index_name: catmandu
              index_mappings:
-               data:
+               book:
                  properties:
                      title:
                          type: text
              bags:
                data:
+                  type: book
                   cql_mapping:
                     indexes:
                         title:
