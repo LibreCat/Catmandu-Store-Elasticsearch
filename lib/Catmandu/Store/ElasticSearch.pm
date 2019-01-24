@@ -4,49 +4,26 @@ use Catmandu::Sane;
 
 our $VERSION = '0.0512';
 
-use Moo;
 use Search::Elasticsearch;
 use Catmandu::Util qw(is_instance);
 use Catmandu::Store::ElasticSearch::Bag;
+use Moo;
 use namespace::clean;
 
 with 'Catmandu::Store';
-with 'Catmandu::Droppable';
 
-has index_name     => (is => 'ro', required => 1);
-has index_settings => (is => 'ro', lazy     => 1, default => sub {+{}});
-has index_mappings => (is => 'ro', lazy     => 1, default => sub {+{}});
-has _es_args       => (is => 'rw', lazy     => 1, default => sub {+{}});
+has _es_args => (is => 'rw', lazy => 1, default => sub {+{}});
 has es => (is => 'lazy');
-
-# used internally
-has is_es_1_or_2 => (is => 'lazy');
-
-sub _build_es {
-    my ($self) = @_;
-    my $es = Search::Elasticsearch->new($self->_es_args);
-    unless ($es->indices->exists(index => $self->index_name)) {
-        $es->indices->create(
-            index => $self->index_name,
-            body  => {
-                settings => $self->index_settings,
-                mappings => $self->index_mappings,
-            },
-        );
-    }
-    $es;
-}
+has is_es_1_or_2 => (is => 'lazy', init_arg => undef);
 
 sub BUILD {
     my ($self, $args) = @_;
-
-    # TODO filter out own args
     $self->_es_args($args);
 }
 
-sub drop {
+sub _build_es {
     my ($self) = @_;
-    $self->es->indices->delete(index => $self->index_name);
+    Search::Elasticsearch->new($self->_es_args);
 }
 
 sub _build_is_es_1_or_2 {
