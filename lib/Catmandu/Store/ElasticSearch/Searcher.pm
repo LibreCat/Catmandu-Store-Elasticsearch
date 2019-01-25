@@ -18,8 +18,8 @@ has sort  => (is => 'ro');
 
 sub generator {
     my ($self) = @_;
-    my $bag = $self->bag;
-    my $store = $bag->store;
+    my $bag    = $self->bag;
+    my $store  = $bag->store;
     my $id_key = $bag->id_key;
     sub {
         state $total = $self->total;
@@ -34,9 +34,8 @@ sub generator {
                 index => $bag->index,
                 type  => $bag->type,
                 from  => $self->start,
-                size =>
-                    $bag->buffer_size, # TODO divide by number of shards
-                body => $body,
+                size  => $bag->buffer_size,  # TODO divide by number of shards
+                body  => $body,
             );
             if (!$self->sort && $store->is_es_1_or_2) {
                 $args{search_type} = 'scan';

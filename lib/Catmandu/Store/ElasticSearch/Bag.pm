@@ -16,14 +16,14 @@ with 'Catmandu::Bag';
 with 'Catmandu::Droppable';
 with 'Catmandu::CQLSearchable';
 
-has index          => (is => 'lazy');
-has settings       => (is => 'lazy');
-has mapping        => (is => 'lazy');
-has type           => (is => 'lazy');
-has buffer_size    => (is => 'lazy', builder => 'default_buffer_size');
-has _bulk          => (is => 'lazy');
-has cql_mapping    => (is => 'ro');
-has on_error       => (is => 'lazy');
+has index       => (is => 'lazy');
+has settings    => (is => 'lazy');
+has mapping     => (is => 'lazy');
+has type        => (is => 'lazy');
+has buffer_size => (is => 'lazy', builder => 'default_buffer_size');
+has _bulk       => (is => 'lazy');
+has cql_mapping => (is => 'ro');
+has on_error    => (is => 'lazy');
 
 sub BUILD {
     my ($self) = @_;
@@ -33,7 +33,7 @@ sub BUILD {
             index => $self->index,
             body  => {
                 settings => $self->settings,
-                mappings => { $self->type => $self->mapping },
+                mappings => {$self->type => $self->mapping},
             },
         );
     }
@@ -114,7 +114,7 @@ sub generator {
             my %args = (
                 index => $self->index,
                 type  => $self->type,
-                size => $self->buffer_size,  # TODO divide by number of shards
+                size  => $self->buffer_size, # TODO divide by number of shards
                 body => {query => {match_all => {}},},
             );
             if ($self->store->is_es_1_or_2) {
@@ -134,10 +134,8 @@ sub generator {
 
 sub count {
     my ($self) = @_;
-    $self->store->es->count(
-        index => $self->index,
-        type  => $self->type,
-    )->{count};
+    $self->store->es->count(index => $self->index, type => $self->type,)
+        ->{count};
 }
 
 sub get {
@@ -179,11 +177,8 @@ sub delete_all {
     else {    # TODO document plugin needed for es 2.x
         $es->transport->perform_request(
             method => 'DELETE',
-            path   => '/'
-                . $self->index . '/'
-                . $self->type
-                . '/_query',
-            body => {query => {match_all => {}},}
+            path   => '/' . $self->index . '/' . $self->type . '/_query',
+            body   => {query => {match_all => {}},}
         );
     }
 }
@@ -201,11 +196,8 @@ sub delete_by_query {
     else {    # TODO document plugin needed for es 2.x
         $es->transport->perform_request(
             method => 'DELETE',
-            path   => '/'
-                . $self->index . '/'
-                . $self->type
-                . '/_query',
-            body => {query => $args{query},}
+            path   => '/' . $self->index . '/' . $self->type . '/_query',
+            body   => {query => $args{query},}
         );
     }
 }
@@ -247,15 +239,18 @@ sub search {
         $hits->{hits} = [map {$bag->get($_->{_id})} @$docs];
     }
     elsif ($args{fields}) {
+
         # TODO check if fields includes id_key
         $hits->{hits} = [map {$_->{fields} || +{}} @$docs];
     }
     else {
-        $hits->{hits} = [map {
-            my $data = $_->{_source};
-            $data->{$id_key} = $_->{_id};
-            $data;
-        } @$docs];
+        $hits->{hits} = [
+            map {
+                my $data = $_->{_source};
+                $data->{$id_key} = $_->{_id};
+                $data;
+            } @$docs
+        ];
     }
 
     $hits = Catmandu::Hits->new($hits);

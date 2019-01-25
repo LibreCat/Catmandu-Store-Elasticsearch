@@ -12,8 +12,8 @@ use namespace::clean;
 
 with 'Catmandu::Store';
 
-has _es_args => (is => 'rw', lazy => 1, default => sub {+{}});
-has es => (is => 'lazy');
+has _es_args     => (is => 'rw', lazy => 1, default => sub {+{}});
+has es           => (is => 'lazy');
 has is_es_1_or_2 => (is => 'lazy', init_arg => undef);
 
 sub BUILD {
