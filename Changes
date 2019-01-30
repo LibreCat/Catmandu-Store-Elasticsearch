@@ -1,6 +1,7 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+  - update constructor pod
 
 0.9_02  2019-01-30 12:15:12 CET
   - add an upgrading to 1.0 section to the pod

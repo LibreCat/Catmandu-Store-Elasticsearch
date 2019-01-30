@@ -109,13 +109,12 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
 
 =head1 METHODS
 
-=head2 new(index_name => $name, [...])
+=head2 new(%params)
 
-=head2 new(index_name => $name , ... , bags => { mybag => { index => 'myindex', mapping => \%map cql_mapping => \%map } })
+=head2 new(%params, bags => { mybag => { index => 'myindex', mapping => \%map cql_mapping => \%map } })
 
-Create a new Catmandu::Store::ElasticSearch store connected to index $name.
-Optional extra ElasticSearch connection parameters will be passed on to the
-backend database.
+Create a new Catmandu::Store::ElasticSearch store. ElasticSearch connection
+parameters will be passed on to the underlying client.
 
 Optionally provide for each bag a C<index> to indicate which index to use.
 This defaults to the bag's name.
@@ -331,7 +330,11 @@ L<Catmandu::Store>
 
 =head1 AUTHOR
 
-Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>
+=over 4
+
+=item Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>
+
+=back
 
 =head1 CONTRIBUTORS
 
