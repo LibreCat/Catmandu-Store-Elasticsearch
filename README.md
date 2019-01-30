@@ -102,7 +102,7 @@ Each Catmandu::Bag in this Catmandu::Store implements:
 - [Catmandu::Searchable](https://metacpan.org/pod/Catmandu::Searchable)
 - [Catmandu::CQLSearchable](https://metacpan.org/pod/Catmandu::CQLSearchable)
 
-# INDEX MAP
+# INDEX MAPPING
 
 The mapping contains a Elasticsearch schema mappings for each
 bag defined in the index. E.g.
@@ -139,7 +139,7 @@ name of the store, `search` in this case:
     $ catmandu import JSON to search --bag mybag < data.json
     $ catmandu export search --bag mybag to JSON > data.json
 
-# CQL MAP
+# CQL MAPPING
 
 Catmandu::Store::ElasticSearch supports CQL searches when a cql\_mapping is provided
 for each bag. This hash contains a translation of CQL fields into Elasticsearch
@@ -263,6 +263,15 @@ ignore: do nothing
     my $store = Catmandu::Store::ElasticSearch->new(
         bags => { data => { on_error => 'log' } }
     });
+
+# UPGRADING FROM A PRE 1.0 VERSION
+
+Versions of this store < 1.0 used Elasticsearch types to map bags to a single
+index. Support for multiple types in one index has since been removed from
+Elasticsearch and since 1.0 each bag is mapped to an index.
+
+You need to export you data before upgrading, update the configuration and then
+import you data again.
 
 # SEE ALSO
 
