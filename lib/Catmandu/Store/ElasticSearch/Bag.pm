@@ -26,6 +26,10 @@ has cql_mapping => (is => 'ro');
 has on_error    => (is => 'lazy');
 
 sub BUILD {
+    $_[0]->create_index;
+}
+
+sub create_index {
     my ($self) = @_;
     my $es = $self->store->es;
     unless ($es->indices->exists(index => $self->index)) {
@@ -37,7 +41,7 @@ sub BUILD {
             },
         );
     }
-    $es;
+    1;
 }
 
 sub default_buffer_size {100}
@@ -354,10 +358,22 @@ Catmandu::Store::ElasticSearch::Bag - Catmandu::Bag implementation for Elasticse
 
 =head1 DESCRIPTION
 
-This class isn't normally used directly. Instances are constructed using the store's C<bag> method.
+See the main documentation at L<Catmandu::Store::ElasticSearch>.
+
+=head1 METHODS
+
+This class inherits all the methods of L<Catmandu::Bag>,
+L<Catmandu::CQLSearchable> and L<Catmandu::Droppable>.
+It also provides the following methods:
+
+=head2 create_index()
+
+This method is called automatically when the bag is instantiated. You only need
+to call it manually it after deleting the index with C<drop> or the
+Elasticsearch API.
 
 =head1 SEE ALSO
 
-L<Catmandu::Bag>, L<Catmandu::Searchable>
+L<Catmandu::Bag>, L<Catmandu::Searchable>, L<Catmandu::CQLSearchable>, L<Catmandu::Droppable>
 
 =cut

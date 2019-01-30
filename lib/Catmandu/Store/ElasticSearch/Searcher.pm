@@ -16,8 +16,56 @@ has limit => (is => 'ro', required => 1);
 has total => (is => 'ro');
 has sort  => (is => 'ro');
 
+sub _paging_generator {
+    my ($self) = @_;
+    my $es     = $self->bag->store->es;
+    my $id_key = $self->bag->id_key;
+    my $index  = $self->bag->index;
+    my $type   = $self->bag->type;
+    my $query  = $self->query;
+    my $sort   = $self->sort;
+
+    sub {
+        state $start = $self->start;
+        state $total = $self->total;
+        state $limit = $self->limit;
+        state $hits;
+        if (defined $total) {
+            return unless $total;
+        }
+        unless ($hits && @$hits) {
+            if ($total && $limit > $total) {
+                $limit = $total;
+            }
+            my $body = {query => $query, from => $start, size => $limit,};
+            $body->{sort} = $sort if defined $sort;
+            my $res = $es->search(
+                index => $index,
+                type  => $type,
+                body  => $body,
+            );
+
+            $hits = $res->{hits}{hits};
+            $start += $limit;
+        }
+        if ($total) {
+            $total--;
+        }
+        my $doc = shift(@$hits) || return;
+        my $data = $doc->{_source};
+        $data->{$id_key} = $doc->{_id};
+        $data;
+    };
+}
+
 sub generator {
     my ($self) = @_;
+
+    # scroll + from isn't supported in es > 1.2
+    if ($self->start) {
+        return $self->_paging_generator;
+    }
+
     my $bag    = $self->bag;
     my $store  = $bag->store;
     my $id_key = $bag->id_key;
