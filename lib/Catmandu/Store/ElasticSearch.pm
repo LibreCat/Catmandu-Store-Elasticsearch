@@ -2,7 +2,7 @@ package Catmandu::Store::ElasticSearch;
 
 use Catmandu::Sane;
 
-our $VERSION = '0.9_02';
+our $VERSION = '1.0';
 
 use Search::Elasticsearch;
 use Catmandu::Util qw(is_instance);

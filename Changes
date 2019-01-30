@@ -1,6 +1,8 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+
+1.0  2019-01-30 13:42:43 CET
   - update constructor pod
 
 0.9_02  2019-01-30 12:15:12 CET
