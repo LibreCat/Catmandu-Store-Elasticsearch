@@ -1,6 +1,7 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+  - add an upgrading to 1.0 section to the pod
 
 0.9_01  2019-01-30 11:55:01 CET
   - this is a major breaking release that is fully compatible
