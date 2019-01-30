@@ -2,7 +2,7 @@ package Catmandu::Store::ElasticSearch::Searcher;
 
 use Catmandu::Sane;
 
-our $VERSION = '0.0512';
+our $VERSION = '0.9_01';
 
 use Moo;
 use namespace::clean;
