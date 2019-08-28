@@ -429,6 +429,7 @@ sub _text_node {
         # escape spaces
         $term =~ s/(?<!\\) /\\ /g;
         $term =~ s/^ /\\ /;
+
         # escape colons
         $term =~ s/(?<!\\):/\\:/g;
         $term =~ s/^:/\\:/;
