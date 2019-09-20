@@ -78,7 +78,6 @@ sub generator {
             my %args = (
                 index => $bag->index,
                 type  => $bag->type,
-                from  => $self->start,
                 size  => $bag->buffer_size,  # TODO divide by number of shards
                 body  => $body,
             );

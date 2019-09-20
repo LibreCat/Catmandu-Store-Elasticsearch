@@ -224,19 +224,32 @@ sub search {
 
     my $id_key = $self->id_key;
 
-    my $start = delete $args{start};
-    my $limit = delete $args{limit};
-    my $bag   = delete $args{reify};
+    my $start  = delete $args{start};
+    my $limit  = delete $args{limit};
+    my $scroll = delete $args{scroll};
+    my $bag    = delete $args{reify};
 
     if ($bag) {
         $args{fields} = [];
     }
 
-    my $res = $self->store->es->search(
+    my %es_args = (
         index => $self->index,
         type  => $self->type,
-        body  => {%args, from => $start, size => $limit,},
+        body  => {%args, size => $limit,},
     );
+
+    if (defined $scroll) {
+        $es_args{scroll} = $scroll;
+    } else {
+        $es_args{body}{from} = $start;
+    }
+
+    if ($args{scroll_id}) {
+        $res = $self->store->es->scroll(%es_args);
+    } else {
+        $res = $self->store->es->search(%es_args);
+    }
 
     my $docs = $res->{hits}{hits};
 
@@ -263,7 +276,7 @@ sub search {
 
     $hits = Catmandu::Hits->new($hits);
 
-    for my $key (qw(facets suggest aggregations)) {
+    for my $key (qw(facets suggest aggregations scroll_id)) {
         $hits->{$key} = $res->{$key} if exists $res->{$key};
     }
 
