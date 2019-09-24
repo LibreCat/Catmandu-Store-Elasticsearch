@@ -241,13 +241,16 @@ sub search {
 
     if (defined $scroll) {
         $es_args{scroll} = $scroll;
-    } else {
+    }
+    else {
         $es_args{body}{from} = $start;
     }
 
+    my $res;
     if ($args{scroll_id}) {
         $res = $self->store->es->scroll(%es_args);
-    } else {
+    }
+    else {
         $res = $self->store->es->search(%es_args);
     }
 
@@ -276,7 +279,8 @@ sub search {
 
     $hits = Catmandu::Hits->new($hits);
 
-    for my $key (qw(facets suggest aggregations scroll_id)) {
+    $hits->{scroll_id} = $res->{_scroll_id} if exists $res->{_scroll_id};
+    for my $key (qw(facets suggest aggregations)) {
         $hits->{$key} = $res->{$key} if exists $res->{$key};
     }
 
