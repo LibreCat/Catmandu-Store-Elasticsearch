@@ -232,9 +232,7 @@ sub search {
 
     my $res;
     if (defined $scroll_id) {
-        my %es_args = (
-            body  => {scroll_id => $scroll_id},
-        );
+        my %es_args = (body => {scroll_id => $scroll_id},);
         if (defined $scroll) {
             $es_args{scroll} = $scroll;
         }
