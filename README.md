@@ -30,6 +30,8 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
     use Catmandu;
 
     my $store = Catmandu->store('ElasticSearch');
+    # options will be passed to the underlying Search::Elasticsearch client
+    my $store = Catmandu->store('ElasticSearch', nodes => ['server.example.com:9200']);
 
     my $obj1 = $store->bag('catmandu')->add({ name => 'Patrick' });
 
@@ -92,14 +94,14 @@ Optionally provide for each bag an `on_error` error handler (See below).
 
 This Catmandu::Store implements:
 
-- [Catmandu::Store](https://metacpan.org/pod/Catmandu::Store)
+- [Catmandu::Store](https://metacpan.org/pod/Catmandu%3A%3AStore)
 
 Each Catmandu::Bag in this Catmandu::Store implements:
 
-- [Catmandu::Bag](https://metacpan.org/pod/Catmandu::Bag)
-- [Catmandu::Droppable](https://metacpan.org/pod/Catmandu::Droppable)
-- [Catmandu::Searchable](https://metacpan.org/pod/Catmandu::Searchable)
-- [Catmandu::CQLSearchable](https://metacpan.org/pod/Catmandu::CQLSearchable)
+- [Catmandu::Bag](https://metacpan.org/pod/Catmandu%3A%3ABag)
+- [Catmandu::Droppable](https://metacpan.org/pod/Catmandu%3A%3ADroppable)
+- [Catmandu::Searchable](https://metacpan.org/pod/Catmandu%3A%3ASearchable)
+- [Catmandu::CQLSearchable](https://metacpan.org/pod/Catmandu%3A%3ACQLSearchable)
 
 # INDEX MAPPING
 
@@ -274,7 +276,7 @@ import you data again.
 
 # SEE ALSO
 
-[Catmandu::Store](https://metacpan.org/pod/Catmandu::Store)
+[Catmandu::Store](https://metacpan.org/pod/Catmandu%3A%3AStore)
 
 # AUTHOR
 
