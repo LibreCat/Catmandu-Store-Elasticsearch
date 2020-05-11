@@ -116,7 +116,7 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
 =head2 new(%params, bags => { mybag => { index => 'myindex', mapping => \%map cql_mapping => \%map } })
 
 Create a new Catmandu::Store::ElasticSearch store. ElasticSearch connection
-parameters will be passed on to the underlying client.
+parameters will be passed on to the underlying L<Search::Elasticsearch> client.
 
 Optionally provide for each bag a C<index> to indicate which index to use.
 This defaults to the bag's name.
@@ -328,7 +328,7 @@ import you data again.
 
 =head1 SEE ALSO
 
-L<Catmandu::Store>
+L<Catmandu::Store> , L<Search::Elasticsearch>
 
 =head1 AUTHOR
 
