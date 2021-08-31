@@ -12,9 +12,11 @@ use namespace::clean;
 
 with 'Catmandu::Store';
 
-has _es_args     => (is => 'rw', lazy => 1, default => sub {+{}});
-has es           => (is => 'lazy');
-has is_es_1_or_2 => (is => 'lazy', init_arg => undef);
+has _es_args          => (is => 'rw', lazy => 1, default => sub {+{}});
+has es                => (is => 'lazy');
+has es_client_version => (is => 'lazy');
+has is_es_1_or_2      => (is => 'lazy', init_arg => undef);
+has is_es_7_or_higher => (is => 'lazy', init_arg => undef);
 
 sub BUILD {
     my ($self, $args) = @_;
@@ -26,11 +28,21 @@ sub _build_es {
     Search::Elasticsearch->new($self->_es_args);
 }
 
+sub _build_es_client_version {
+    my ($self) = @_;
+    my ($version)
+        = ref($self->es) =~ 'Search::Elasticsearch::Client::(\d+)_0::Direct';
+    $version + 0;
+}
+
 sub _build_is_es_1_or_2 {
     my ($self) = @_;
-    is_instance($self->es, 'Search::Elasticsearch::Client::1_0::Direct')
-        || is_instance($self->es,
-        'Search::Elasticsearch::Client::2_0::Direct');
+    $self->es_client_version == 1 || $self->es_client_version == 2;
+}
+
+sub _build_is_es_7_or_higher {
+    my ($self) = @_;
+    $self->es_client_version >= 7;
 }
 
 1;

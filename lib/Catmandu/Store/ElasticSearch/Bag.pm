@@ -90,6 +90,10 @@ sub _build_index {
 }
 
 sub _build_type {
+    my ($self) = @_;
+    if ($self->store->is_es_7_or_higher) {
+        return '_doc';
+    }
     $_[0]->name;
 }
 
@@ -98,10 +102,12 @@ sub _build__bulk {
     my $on_error = $self->_coerce_on_error($self->on_error);
     my %args     = (
         index     => $self->index,
-        type      => $self->type,
         max_count => $self->buffer_size,
         on_error  => $on_error,
     );
+    if (!$self->store->is_es_7_or_higher) {
+        $args{type} = $self->type;
+    }
     if ($self->log->is_debug) {
         $args{on_success} = sub {
             my ($action, $res, $i) = @_;
@@ -150,11 +156,11 @@ sub count {
 sub get {
     my ($self, $id) = @_;
     try {
-        my $data = $self->store->es->get_source(
-            index => $self->index,
-            type  => $self->type,
-            id    => $id,
-        );
+        my %args = (index => $self->index, id => $id,);
+        if (!$self->store->is_es_7_or_higher) {
+            $args{type} = $self->type;
+        }
+        my $data = $self->store->es->get_source(%args);
         $data->{$self->id_key} = $id;
         $data;
     }
@@ -177,12 +183,14 @@ sub delete_all {
     my ($self) = @_;
     my $es = $self->store->es;
     if ($es->can('delete_by_query')) {
-        $es->delete_by_query(
-            index => $self->index,
-            type  => $self->type,
-            body  => {query => {match_all => {}},},
-        );
+        my %args
+            = (index => $self->index, body => {query => {match_all => {}},},);
+        if (!$self->store->is_es_7_or_higher) {
+            $args{type} = $self->type;
+        }
+        $es->delete_by_query(%args);
     }
+
     else {    # TODO document plugin needed for es 2.x
         $es->transport->perform_request(
             method => 'DELETE',
@@ -193,20 +201,20 @@ sub delete_all {
 }
 
 sub delete_by_query {
-    my ($self, %args) = @_;
+    my ($self, %opts) = @_;
     my $es = $self->store->es;
     if ($es->can('delete_by_query')) {
-        $es->delete_by_query(
-            index => $self->index,
-            type  => $self->type,
-            body  => {query => $args{query},},
-        );
+        my %args = (index => $self->index, body => {query => $opts{query},},);
+        if (!$self->store->is_es_7_or_higher) {
+            $args{type} = $self->type;
+        }
+        $es->delete_by_query(%args);
     }
     else {    # TODO document plugin needed for es 2.x
         $es->transport->perform_request(
             method => 'DELETE',
             path   => '/' . $self->index . '/' . $self->type . '/_query',
-            body   => {query => $args{query},}
+            body   => {query => $opts{query},}
         );
     }
 }

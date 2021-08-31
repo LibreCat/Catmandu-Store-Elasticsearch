@@ -75,7 +75,7 @@ Catmandu::Store::ElasticSearch - A searchable store backed by Elasticsearch
 ## new(%params, bags => { mybag => { index => 'myindex', mapping => \\%map cql\_mapping => \\%map } })
 
 Create a new Catmandu::Store::ElasticSearch store. ElasticSearch connection
-parameters will be passed on to the underlying client.
+parameters will be passed on to the underlying [Search::Elasticsearch](https://metacpan.org/pod/Search%3A%3AElasticsearch) client.
 
 Optionally provide for each bag a `index` to indicate which index to use.
 This defaults to the bag's name.
@@ -276,7 +276,7 @@ import you data again.
 
 # SEE ALSO
 
-[Catmandu::Store](https://metacpan.org/pod/Catmandu%3A%3AStore)
+[Catmandu::Store](https://metacpan.org/pod/Catmandu%3A%3AStore) , [Search::Elasticsearch](https://metacpan.org/pod/Search%3A%3AElasticsearch)
 
 # AUTHOR
 
