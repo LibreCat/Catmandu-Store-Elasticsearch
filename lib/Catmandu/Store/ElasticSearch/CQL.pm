@@ -80,7 +80,8 @@ sub _parse_term_node {
     my $term = $node->getTerm;
 
     if ($term =~ $RE_MATCH_ALL) {
-        return {match_all => {}};
+        $query->{match_all} = +{};
+        return $query;
     }
 
     my $qualifier = $node->getQualifier;
