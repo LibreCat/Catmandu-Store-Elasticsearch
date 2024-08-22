@@ -1,6 +1,7 @@
 Revision history for Catmandu-Store-ElasticSearch
 
 {{$NEXT}}
+  - force reindex
 
 1.0203  2024-08-22 13:57:00 CEST
   - fix cql match all query
